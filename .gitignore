@@ -1,0 +1,16 @@
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore WordPress content outside the plugin
+../../../uploads/
+../../../cache/
+../../../upgrade/
+
+# Ignore build and vendor files (if added later)
+node_modules/
+vendor/
+*.log
+
+# Ignore config files (optional)
+.env
