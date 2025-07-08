@@ -6,7 +6,15 @@ Version: 1.0
 Author: Maggie Dykstra
 */
 
+add_action('init', function () {
+    error_log('Running schema check...');
+    gtp_check_and_update_schema();
+});
+
 defined('ABSPATH') or die('No script kiddies please!');
+
+register_activation_hook(__FILE__, 'gtp_check_and_update_schema');
+gtp_check_and_update_schema();
 
 // Register admin menu
 add_action('admin_menu', 'tutor_management_add_admin_menu');
@@ -43,12 +51,12 @@ function tutor_management_dashboard_page() {
     <?php
 }
 
-// Create custom table on plugin activation
-register_activation_hook(__FILE__, 'gtp_create_users_table');
-function gtp_create_users_table() {
+// Hook schema sync to init so it's always updated
+add_action('init', 'gtp_check_and_update_schema');
+
+function gtp_check_and_update_schema() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'gtp_users';
-
     $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE IF NOT EXISTS $table_name (
@@ -60,7 +68,8 @@ function gtp_create_users_table() {
         UNIQUE KEY username (username)
     ) $charset_collate;";
 
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+    error_log('About to run dbDelta for gtp_users...');
     dbDelta($sql);
 }
 
@@ -78,7 +87,6 @@ function gtp_login_shortcode() {
         $user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE username = %s", $username));
 
         if ($user && password_verify($password, $user->password)) {
-            // Set session or cookie if needed
             if ($user->role === 'admin') {
                 wp_redirect(site_url('/admin-dashboard'));
                 exit;
@@ -101,4 +109,4 @@ function gtp_login_shortcode() {
     </form>
     <?php
     return ob_get_clean();
-}
+}git add tutor-management-plugin.php
