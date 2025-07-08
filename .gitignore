@@ -1,16 +1,23 @@
-# Ignore system files
+# macOS system files
 .DS_Store
+
+# Windows system files
 Thumbs.db
 
-# Ignore WordPress content outside the plugin
+# Logs and environment configs
+*.log
+.env
+
+# Node/vendor if you add tooling later
+node_modules/
+vendor/
+
+# WordPress directories outside plugin (safe fallback)
 ../../../uploads/
 ../../../cache/
 ../../../upgrade/
 
-# Ignore build and vendor files (if added later)
-node_modules/
-vendor/
-*.log
-
-# Ignore config files (optional)
-.env
+# Ignore any backup or temp files
+*.bak
+*.tmp
+*.swp
