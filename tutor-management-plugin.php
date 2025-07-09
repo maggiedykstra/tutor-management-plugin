@@ -109,4 +109,26 @@ function gtp_login_shortcode() {
     </form>
     <?php
     return ob_get_clean();
-}git add tutor-management-plugin.php
+}
+
+register_activation_hook(__FILE__, 'gtp_create_required_pages');
+
+function gtp_create_required_pages() {
+    $pages = [
+        'gtp-login' => '[gtp_login]',
+        'admin-dashboard' => '<h2>Welcome Admin!</h2>',
+        'tutor-dashboard' => '<h2>Welcome Teaching Assistant!</h2>',
+    ];
+
+    foreach ($pages as $slug => $content) {
+        if (!get_page_by_path($slug)) {
+            wp_insert_post([
+                'post_title'   => ucwords(str_replace('-', ' ', $slug)),
+                'post_name'    => $slug,
+                'post_content' => $content,
+                'post_status'  => 'publish',
+                'post_type'    => 'page',
+            ]);
+        }
+    }
+}
