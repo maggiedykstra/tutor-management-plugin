@@ -109,4 +109,4 @@ function gtp_login_shortcode() {
     </form>
     <?php
     return ob_get_clean();
-}git add tutor-management-plugin.php
+}
