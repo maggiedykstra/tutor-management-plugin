@@ -46,6 +46,16 @@ require_once plugin_dir_path(__FILE__) . 'includes/devonly-db.php';
 
 // // Load CSS and JS
 // add_action('admin_enqueue_scripts', 'tutor_management_enqueue_assets');
+function gtp_plugin_activate() {
+    gtp_check_and_update_schema();
+    gtp_create_required_pages();
+    gtp_create_test_users(); // Adds the test users
+}
+
+
+
+// Enqueue Plugin Styles and Scripts
+add_action('admin_enqueue_scripts', 'tutor_management_enqueue_assets');
 
 // function tutor_management_enqueue_assets($hook) {
 //     if ($hook !== 'toplevel_page_tutor-dashboard') return;
@@ -112,6 +122,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/devonly-db.php';
 //         }
 //     }
 
+    // Handle registration redirect
 //     if (isset($_POST['gtp_register_submit'])) {
 //         wp_redirect(site_url('/index.php/registration-page'));
 //     }
@@ -133,14 +144,15 @@ require_once plugin_dir_path(__FILE__) . 'includes/devonly-db.php';
 //     return ob_get_clean();
 // }
 
+// Auto-Create Required Pages on Activation
 // register_activation_hook(__FILE__, 'gtp_create_required_pages');
 
 // function gtp_create_required_pages() {
 //     $pages = [
-//         'Welcome-to-GTP' => '[gtp_login]',
-//         'admin-dashboard' => '<h2>Welcome Admin!</h2>',
-//         'tutor-dashboard' => '<h2>Welcome Teaching Assistant!</h2>',
-//         'registration-page' => '<h2>Register your GTP account here</h2>',
+//         'Welcome-to-GTP'     => '[gtp_login]',
+//         'admin-dashboard'    => '<h2>Welcome Admin!</h2>',
+//         'tutor-dashboard'    => '<h2>Welcome Teaching Assistant!</h2>',
+//         'registration-page'  => '<h2>Register your GTP account here</h2>',
 //     ];
 
 //     foreach ($pages as $slug => $content) {
@@ -214,5 +226,58 @@ require_once plugin_dir_path(__FILE__) . 'includes/devonly-db.php';
 //                 'role'     => $user['role']
 //             ]);
 //         }
+//     }
+// }
+//     foreach ($pages as $slug => $content) {
+//         if (!get_page_by_path($slug)) {
+//             wp_insert_post([
+//                 'post_title'   => ucwords(str_replace('-', ' ', $slug)),
+//                 'post_name'    => $slug,
+//                 'post_content' => $content,
+//                 'post_status'  => 'private',
+//                 'post_type'    => 'page',
+//             ]);
+//         }
+//     }
+
+
+// // Remove "Private:" prefix from page titles for cleaner UI
+// add_filter('the_title', 'gtp_remove_private_prefix', 10, 2);
+
+// function gtp_remove_private_prefix($title, $id) {
+//     if (get_post_status($id) === 'private') {
+//         $title = str_replace('Private: ', '', $title);
+//     }
+//     return $title;
+// }
+
+// // adds test users
+
+// function gtp_create_test_users() {
+//     global $wpdb;
+//     $table = $wpdb->prefix . 'gtp_users';
+
+//     // Check and insert test admin user
+//     $admin_exists = $wpdb->get_var(
+//         $wpdb->prepare("SELECT COUNT(*) FROM $table WHERE username = %s", 'testadmin')
+//     );
+//     if (!$admin_exists) {
+//         $wpdb->insert($table, [
+//             'username' => 'testadmin',
+//             'password' => password_hash('adminpass123', PASSWORD_DEFAULT),
+//             'role'     => 'admin',
+//         ]);
+//     }
+
+//     // Check and insert test TA user
+//     $ta_exists = $wpdb->get_var(
+//         $wpdb->prepare("SELECT COUNT(*) FROM $table WHERE username = %s", 'testta')
+//     );
+//     if (!$ta_exists) {
+//         $wpdb->insert($table, [
+//             'username' => 'testta',
+//             'password' => password_hash('tapass123', PASSWORD_DEFAULT),
+//             'role'     => 'tutor',
+//         ]);
 //     }
 // }
