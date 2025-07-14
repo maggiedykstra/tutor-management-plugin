@@ -6,32 +6,27 @@ Version: 1.0
 Author: Maggie Dykstra
 */
 
+// Prevent direct access
+defined('ABSPATH') or die('No script kiddies please!');
+
+// Load schema check on initialization and activation of the page
 add_action('init', function () {
     error_log('Running schema check...');
     gtp_check_and_update_schema();
 });
+// register_activation_hook(__FILE__, 'gtp_check_and_update_schema');
 
-defined('ABSPATH') or die('No script kiddies please!');
+register_activation_hook(__FILE__, 'gtp_plugin_activate');
 
-register_activation_hook(__FILE__, 'gtp_check_and_update_schema');
-gtp_check_and_update_schema();
-
-// Register admin menu
-add_action('admin_menu', 'tutor_management_add_admin_menu');
-
-function tutor_management_add_admin_menu() {
-    add_menu_page(
-        'Tutor Dashboard',
-        'Tutor Dashboard',
-        'manage_options',
-        'tutor-dashboard',
-        'tutor_management_dashboard_page',
-        'dashicons-welcome-learn-more',
-        6
-    );
+function gtp_plugin_activate() {
+    gtp_check_and_update_schema();
+    gtp_create_required_pages();
+    gtp_create_test_users(); // Adds the test users
 }
 
-// Load CSS and JS
+
+
+// Enqueue Plugin Styles and Scripts
 add_action('admin_enqueue_scripts', 'tutor_management_enqueue_assets');
 
 function tutor_management_enqueue_assets($hook) {
@@ -41,19 +36,8 @@ function tutor_management_enqueue_assets($hook) {
     wp_enqueue_script('tutor-script', plugin_dir_url(__FILE__) . 'assets/script.js', array('jquery'), null, true);
 }
 
-// Dashboard Page Content
-function tutor_management_dashboard_page() {
-    ?>
-    <div class="tutor-welcome-screen">
-        <h1>Welcome to the Tutor Management Plugin</h1>
-        <p>This is your admin panel.</p>
-    </div>
-    <?php
-}
 
-// Hook schema sync to init so it's always updated
-add_action('init', 'gtp_check_and_update_schema');
-
+// Create/Update gtp_users table
 function gtp_check_and_update_schema() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'gtp_users';
@@ -73,7 +57,7 @@ function gtp_check_and_update_schema() {
     dbDelta($sql);
 }
 
-// Shortcode to show login form
+// GTP Login Page UI Shortcode [gtp_login]
 add_shortcode('gtp_login', 'gtp_login_shortcode');
 
 function gtp_login_shortcode() {
@@ -99,12 +83,14 @@ function gtp_login_shortcode() {
         }
     }
 
+    // Handle registration redirect
     if (isset($_POST['gtp_register_submit'])) {
         wp_redirect(site_url('/index.php/registration-page'));
     }
 
     ob_start();
     ?>
+    <!-- Login Form -->
     <form method="post" style="max-width:400px; margin:30px auto; padding:15px; background:#f9f9f9; border-radius:8px;">
         <h2>Login</h2>
         <p><input type="text" name="username" placeholder="Username" required style="width:90%; padding:10px; margin-bottom:10px;"></p>
@@ -112,22 +98,23 @@ function gtp_login_shortcode() {
         <p><input type="submit" name="gtp_login_submit" value="Sign In" style="padding:10px 20px; background:#0073aa; color:white; border:none; cursor:pointer;"></p>
     </form>
 
+    <!-- Registration Redirect Button -->
     <form method="post" style="max-width:400px; margin:10px auto; padding:0px; background:#ffffff; border-radius:8px;">
         <p><input type="submit" name="gtp_register_submit" value="Register Here!" style="padding:10px 20px; background:#0073aa; color:white; border:none; cursor:pointer;"></p>
-
     </form>
     <?php
     return ob_get_clean();
 }
 
+// Auto-Create Required Pages on Activation
 register_activation_hook(__FILE__, 'gtp_create_required_pages');
 
 function gtp_create_required_pages() {
     $pages = [
-        'Welcome-to-GTP' => '[gtp_login]',
-        'admin-dashboard' => '<h2>Welcome Admin!</h2>',
-        'tutor-dashboard' => '<h2>Welcome Teaching Assistant!</h2>',
-        'registration-page' => '<h2>Register your GTP account here</h2>',
+        'Welcome-to-GTP'     => '[gtp_login]',
+        'admin-dashboard'    => '<h2>Welcome Admin!</h2>',
+        'tutor-dashboard'    => '<h2>Welcome Teaching Assistant!</h2>',
+        'registration-page'  => '<h2>Register your GTP account here</h2>',
     ];
 
     foreach ($pages as $slug => $content) {
@@ -136,9 +123,50 @@ function gtp_create_required_pages() {
                 'post_title'   => ucwords(str_replace('-', ' ', $slug)),
                 'post_name'    => $slug,
                 'post_content' => $content,
-                'post_status'  => 'publish',
+                'post_status'  => 'private',
                 'post_type'    => 'page',
             ]);
         }
+    }
+}
+
+// Remove "Private:" prefix from page titles for cleaner UI
+add_filter('the_title', 'gtp_remove_private_prefix', 10, 2);
+
+function gtp_remove_private_prefix($title, $id) {
+    if (get_post_status($id) === 'private') {
+        $title = str_replace('Private: ', '', $title);
+    }
+    return $title;
+}
+
+// adds test users
+
+function gtp_create_test_users() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'gtp_users';
+
+    // Check and insert test admin user
+    $admin_exists = $wpdb->get_var(
+        $wpdb->prepare("SELECT COUNT(*) FROM $table WHERE username = %s", 'testadmin')
+    );
+    if (!$admin_exists) {
+        $wpdb->insert($table, [
+            'username' => 'testadmin',
+            'password' => password_hash('adminpass123', PASSWORD_DEFAULT),
+            'role'     => 'admin',
+        ]);
+    }
+
+    // Check and insert test TA user
+    $ta_exists = $wpdb->get_var(
+        $wpdb->prepare("SELECT COUNT(*) FROM $table WHERE username = %s", 'testta')
+    );
+    if (!$ta_exists) {
+        $wpdb->insert($table, [
+            'username' => 'testta',
+            'password' => password_hash('tapass123', PASSWORD_DEFAULT),
+            'role'     => 'tutor',
+        ]);
     }
 }
