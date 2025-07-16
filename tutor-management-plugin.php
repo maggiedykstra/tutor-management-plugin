@@ -1,61 +1,32 @@
 <?php
- /*
+/*
 Plugin Name: Tutor Management Plugin
 Description: A custom plugin for managing tutors and students.
 Version: 1.0
 Author: Maggie Dykstra
 */
+
 defined('ABSPATH') or die('No script kiddies please!');
 
+
+// Include plugin modules
 require_once plugin_dir_path(__FILE__) . 'includes/schema.php';
 require_once plugin_dir_path(__FILE__) . 'includes/admin-pages.php';
 require_once plugin_dir_path(__FILE__) . 'includes/shortcodes.php';
 require_once plugin_dir_path(__FILE__) . 'includes/pages.php';
+require_once plugin_dir_path(__FILE__) . 'includes/helperfxns.php';
 require_once plugin_dir_path(__FILE__) . 'includes/devonly-db.php';
-// /*
-// Plugin Name: Tutor Management Plugin
-// Description: A custom plugin for managing tutors and students.
-// Version: 1.0
-// Author: Maggie Dykstra
-// */
 
-// add_action('init', function () {
-//     error_log('Running schema check...');
+// Plugin activation hook
+// function gtp_plugin_activate() {
 //     gtp_check_and_update_schema();
-// });
-
-// defined('ABSPATH') or die('No script kiddies please!');
-
-// register_activation_hook(__FILE__, 'gtp_check_and_update_schema');
-// gtp_check_and_update_schema();
-
-// // Register admin menu
-// add_action('admin_menu', 'tutor_management_add_admin_menu');
-
-// function tutor_management_add_admin_menu() {
-//     add_menu_page(
-//         'Tutor Dashboard',
-//         'Tutor Dashboard',
-//         'manage_options',
-//         'tutor-dashboard',
-//         'tutor_management_dashboard_page',
-//         'dashicons-welcome-learn-more',
-//         6
-//     );
+//     gtp_create_required_pages();
+//    // gtp_create_test_users(); // Adds the test users
 // }
-
-// // Load CSS and JS
-// add_action('admin_enqueue_scripts', 'tutor_management_enqueue_assets');
-function gtp_plugin_activate() {
-    gtp_check_and_update_schema();
-    gtp_create_required_pages();
-    gtp_create_test_users(); // Adds the test users
-}
-
-
+//register_activation_hook(__FILE__, 'gtp_plugin_activate');
 
 // Enqueue Plugin Styles and Scripts
-add_action('admin_enqueue_scripts', 'tutor_management_enqueue_assets');
+//add_action('admin_enqueue_scripts', 'tutor_management_enqueue_assets');
 
 // function tutor_management_enqueue_assets($hook) {
 //     if ($hook !== 'toplevel_page_tutor-dashboard') return;

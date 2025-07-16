@@ -17,5 +17,3 @@ function gtp_check_and_update_schema() {
     dbDelta($sql);
 }
 
-add_action('init', 'gtp_check_and_update_schema');
-register_activation_hook(__FILE__, 'gtp_check_and_update_schema');

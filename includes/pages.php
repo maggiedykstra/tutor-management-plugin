@@ -19,4 +19,14 @@ function gtp_create_required_pages() {
         }
     }
 }
-register_activation_hook(__FILE__, 'gtp_create_required_pages');
+
+
+add_action('template_redirect', function () {
+    // List of page slugs you want to protect
+    $protected_pages = ['admin-dashboard', 'tutor-dashboard', 'registration-page'];
+
+    if (is_page($protected_pages)) {
+        // Check if user is logged in via GTP (custom DB)
+
+    }
+});

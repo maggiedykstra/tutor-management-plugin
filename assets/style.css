@@ -26,3 +26,11 @@
 .tutor-signin-button:hover {
     background: #005177;
 }
+
+/* Hide site header/footer on GTP plugin pages */
+body.gtp-hide-header .wp-block-site-title,
+body.gtp-hide-header header,
+body.gtp-hide-header .wp-block-navigation,
+body.gtp-hide-header footer {
+    display: none !important;
+}
