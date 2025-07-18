@@ -2,7 +2,7 @@
 //=== GTP Dev Seeder: Only for Maria and Maggie ===
 add_action('admin_menu', function () {
     $current_user = wp_get_current_user();
-    if (in_array($current_user->user_login, ['gtpplugin'])) {
+    if (in_array($current_user->user_login, ['gtpplugin', 'globalteachingproject_mdmd'])) {
         add_submenu_page(
             'tutor-dashboard',
             'Dev Seeder',
@@ -17,6 +17,7 @@ add_action('admin_menu', function () {
 function gtp_render_dev_seeder_page() {
     if (isset($_POST['gtp_seed_users'])) {
         gtp_insert_sample_users();
+        gtp_insert_sample_classrooms_and_assignments();
         echo '<div class="notice notice-success"><p>Sample users seeded successfully!</p></div>';
     }
         ?>
@@ -28,15 +29,16 @@ function gtp_render_dev_seeder_page() {
             </form>
         </div>
         <?php
-    }
+}
+
 function gtp_insert_sample_users() {
     global $wpdb;
     $table = $wpdb->prefix . 'gtp_users';
 
     $samples = [
-        ['username' => 'sampleadmin', 'password' => 'admin123', 'role' => 'admin'],
-        ['username' => 'sampletutor1', 'password' => 'tutor123', 'role' => 'tutor'],
-        ['username' => 'sampletutor2', 'password' => 'tutor456', 'role' => 'tutor'],
+        ['username' => 'sampleadmin', 'password' => 'admin123', 'role' => 'admin', 'first_name' => 'SampleA1'],
+        ['username' => 'sampletutor1', 'password' => 'tutor123', 'role' => 'tutor', 'first_name' => 'SampleT1', 'last_name' => 'last', 'email' => 'gmail'],
+        ['username' => 'sampletutor2', 'password' => 'tutor456', 'role' => 'tutor', 'first_name' => 'SampleT2'],
     ];
 
     foreach ($samples as $user) {
@@ -46,59 +48,80 @@ function gtp_insert_sample_users() {
 
         $hashed = password_hash($user['password'], PASSWORD_DEFAULT);
 
+        $data = [
+            'email'      => $user['email'],
+            'first_name' => $user['first_name'],
+            'last_name'  => $user['last_name'],
+            'password'   => $hashed,
+            'role'       => $user['role'],
+        ];
+
         if ($existing) {
-            $wpdb->update($table, [
-                'password' => $hashed,
-                'role'     => $user['role']
-            ], ['id' => $existing]);
+            $wpdb->update($table, $data, ['id' => $existing]);
         } else {
-            $wpdb->insert($table, [
-                'username' => $user['username'],
-                'password' => $hashed,
-                'role'     => $user['role']
-            ]);
+            $data['username'] = $user['username'];
+            $wpdb->insert($table, $data);
         }
     }
 }
 
 
-// // Remove "Private:" prefix from page titles for cleaner UI
-// add_filter('the_title', 'gtp_remove_private_prefix', 10, 2);
+function gtp_insert_sample_classrooms_and_assignments() {
+    global $wpdb;
 
-// function gtp_remove_private_prefix($title, $id) {
-//     if (get_post_status($id) === 'private') {
-//         $title = str_replace('Private: ', '', $title);
-//     }
-//     return $title;
-// }
+    $classrooms_table = $wpdb->prefix . 'gtp_classrooms';
+    $assignments_table = $wpdb->prefix . 'gtp_class_assignments';
+    $users_table = $wpdb->prefix . 'gtp_users';
 
-// // adds test users
+    $sample_classrooms = [
+        [
+            'school' => 'Greenville High',
+            'subject' => 'Biology',
+            'teacher_name' => 'Mrs. Frizzle'
+        ],
+        [
+            'school' => 'Riverdale Academy',
+            'subject' => 'Algebra',
+            'teacher_name' => 'Mr. Baxter'
+        ]
+    ];
 
-// function gtp_create_test_users() {
-//     global $wpdb;
-//     $table = $wpdb->prefix . 'gtp_users';
+    // Insert classrooms if not exist
+    foreach ($sample_classrooms as $classroom) {
+        $existing_id = $wpdb->get_var(
+            $wpdb->prepare("SELECT id FROM $classrooms_table WHERE school = %s AND subject = %s AND teacher_name = %s",
+                $classroom['school'], $classroom['subject'], $classroom['teacher_name'])
+        );
 
-//     // Check and insert test admin user
-//     $admin_exists = $wpdb->get_var(
-//         $wpdb->prepare("SELECT COUNT(*) FROM $table WHERE username = %s", 'testadmin')
-//     );
-//     if (!$admin_exists) {
-//         $wpdb->insert($table, [
-//             'username' => 'testadmin',
-//             'password' => password_hash('adminpass123', PASSWORD_DEFAULT),
-//             'role'     => 'admin',
-//         ]);
-//     }
+        if (!$existing_id) {
+            $wpdb->insert($classrooms_table, $classroom);
+            $classroom_id = $wpdb->insert_id;
+        } else {
+            $classroom_id = $existing_id;
+        }
 
-//     // Check and insert test TA user
-//     $ta_exists = $wpdb->get_var(
-//         $wpdb->prepare("SELECT COUNT(*) FROM $table WHERE username = %s", 'testta')
-//     );
-//     if (!$ta_exists) {
-//         $wpdb->insert($table, [
-//             'username' => 'testta',
-//             'password' => password_hash('tapass123', PASSWORD_DEFAULT),
-//             'role'     => 'tutor',
-//         ]);
-//     }
-// }
+        // Get tutor ID for sampletutor1
+        $tutor_id = $wpdb->get_var(
+            $wpdb->prepare("SELECT id FROM $users_table WHERE username = %s", 'sampletutor1')
+        );
+
+        if ($tutor_id) {
+            // Check if already assigned
+            $assigned = $wpdb->get_var(
+                $wpdb->prepare("SELECT id FROM $assignments_table WHERE tutor_id = %d AND classroom_id = %d",
+                    $tutor_id, $classroom_id)
+            );
+
+            if (!$assigned) {
+                $wpdb->insert($assignments_table, [
+                    'tutor_id' => $tutor_id,
+                    'classroom_id' => $classroom_id,
+                    'first_taught' => current_time('mysql')
+                ]);
+            }
+        }
+    }
+}
+
+
+
