@@ -59,7 +59,8 @@ function gtp_create_classrooms_table() {
         id mediumint(9) NOT NULL AUTO_INCREMENT,
         school varchar(100) NOT NULL,
         subject varchar(100) NOT NULL,
-        teacher_name varchar(100) NOT NULL,
+        teacher_first_name varchar(100) NOT NULL,
+        teacher_last_name varchar(100) NOT NUll,
         PRIMARY KEY (id)
     ) $charset_collate;";
 

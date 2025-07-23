@@ -77,20 +77,27 @@ function gtp_insert_sample_classrooms_and_assignments() {
         [
             'school' => 'Greenville High',
             'subject' => 'Biology',
-            'teacher_name' => 'Mrs. Frizzle'
+            'teacher_first_name' => 'Mrs.',
+            'teacher_last_name' => 'Frizzle'
         ],
         [
             'school' => 'Riverdale Academy',
             'subject' => 'Algebra',
-            'teacher_name' => 'Mr. Baxter'
+              'teacher_first_name' => 'Mr.',
+            'teacher_last_name' => 'Baxter'
         ]
     ];
 
     // Insert classrooms if not exist
     foreach ($sample_classrooms as $classroom) {
         $existing_id = $wpdb->get_var(
-            $wpdb->prepare("SELECT id FROM $classrooms_table WHERE school = %s AND subject = %s AND teacher_name = %s",
-                $classroom['school'], $classroom['subject'], $classroom['teacher_name'])
+            $wpdb->prepare(
+                "SELECT id FROM $classrooms_table WHERE school = %s AND subject = %s AND teacher_first_name = %s AND teacher_last_name = %s",
+                $classroom['school'],
+                $classroom['subject'],
+                $classroom['teacher_first_name'],
+                $classroom['teacher_last_name']
+            )
         );
 
         if (!$existing_id) {
@@ -123,5 +130,28 @@ function gtp_insert_sample_classrooms_and_assignments() {
     }
 }
 
+//code to edit one part of the db that I changed... can use to edit/delete columns later 
 
+function gtp_migrate_classroom_table_once() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'gtp_classrooms';
+
+    // Only run if the old column exists
+    if ($wpdb->get_var("SHOW COLUMNS FROM $table LIKE 'teacher_name'")) {
+        // Delete legacy rows
+        $wpdb->query("DELETE FROM $table WHERE teacher_first_name IS NULL OR teacher_first_name = ''");
+
+        // Drop the old column
+        $wpdb->query("ALTER TABLE $table DROP COLUMN teacher_name");
+
+        // Optional: mark this migration complete
+        update_option('gtp_classroom_migration_done', true);
+    }
+}
+
+add_action('init', function () {
+    if (!get_option('gtp_classroom_migration_done')) {
+        gtp_migrate_classroom_table_once();
+    }
+});
 

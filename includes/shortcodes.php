@@ -53,7 +53,7 @@ function gtp_login_shortcode() {
 add_shortcode('gtp_login', 'gtp_login_shortcode');
 
 
-function gtp_admin_dashboard_shortcode() {
+/* function gtp_admin_dashboard_shortcode() {
     // Check if user is logged in via session
     if (!isset($_SESSION['gtp_user']) || $_SESSION['gtp_user']['role'] !== 'admin') {
         return '<p>You do not have access to this page.</p>';
@@ -63,7 +63,7 @@ function gtp_admin_dashboard_shortcode() {
 
     ob_start();
     ?>
-    <div style="max-width:600px; margin:30px auto; padding:20px; background:#f1f1f1; border-radius:10px;">
+   <!--  <div style="max-width:600px; margin:30px auto; padding:20px; background:#f1f1f1; border-radius:10px;">
         <h2>Welcome, <?php echo $name; ?>!</h2>
 
         <div style="margin-top:20px;">
@@ -80,10 +80,10 @@ function gtp_admin_dashboard_shortcode() {
             </form>
         </div>
     </div>
-    <?php
+    <?php -->
     return ob_get_clean();
-}
-add_shortcode('gtp_admin_dashboard', 'gtp_admin_dashboard_shortcode');
+} */
+#add_shortcode('gtp_admin_dashboard', 'gtp_admin_dashboard_shortcode');
 
 
 function gtp_TA_dashboard_shortcode() {

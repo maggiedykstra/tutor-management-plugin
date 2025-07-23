@@ -5,7 +5,6 @@ add_action('template_redirect', 'gtp_handle_page_access');
 function gtp_handle_page_access() {
     if (!is_page()) return;
 
-
     $page_slug = get_post_field('post_name', get_post());
 
     // Public pages shouldn't require login

@@ -25,6 +25,7 @@ function gtp_create_required_pages() {
         'log-substitute'        => '<h2>Log Substitute Session</h2>',
         'new-ta-registration'   => '<h2>Validate or Register a New TA</h2>',
         'ta-session-filter'     => '<h2>Filter and Review TA Sessions</h2>',
+        'add-classroom'         => '<!-- wp:shortcode -->[gtp_add_classroom]<!-- /wp:shortcode -->',
     ];
 
     foreach ($pages as $slug => $content) {
