@@ -37,6 +37,9 @@ function gtp_admin_dashboard_shortcode() {
     return ob_get_clean();
 }
 add_shortcode('gtp_admin_dashboard', 'gtp_admin_dashboard_shortcode');
+
+
+
 function gtp_add_classroom_shortcode() {
     // Restrict access to admin users
     if (!isset($_SESSION['gtp_user']) || $_SESSION['gtp_user']['role'] !== 'admin') {

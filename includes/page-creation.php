@@ -55,12 +55,3 @@ function gtp_remove_private_prefix($title, $id) {
 
 
 
-
-// add_action('template_redirect', function () {
-//     // List of page slugs you want to protect
-//     $protected_pages = ['admin-dashboard', 'tutor-dashboard', 'registration-page'];
-//     if (is_page($protected_pages)) {
-//         // Check if user is logged in via GTP (custom DB)
-//     }
-// };
-
