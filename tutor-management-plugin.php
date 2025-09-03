@@ -47,7 +47,7 @@ defined('ABSPATH') or die('No script kiddies please!');
 // Include plugin modules
 require_once plugin_dir_path(__FILE__) . 'includes/schema.php';
 require_once plugin_dir_path(__FILE__) . 'includes/WP-admin-pages.php';
-require_once plugin_dir_path(__FILE__) . 'includes/shortcodes.php';
+require_once plugin_dir_path(__FILE__) . 'includes/login-shortcodes.php';
 require_once plugin_dir_path(__FILE__) . 'includes/pages.php';
 require_once plugin_dir_path(__FILE__) . 'includes/helperfxns.php';
 require_once plugin_dir_path(__FILE__) . 'includes/devonly-db.php';
