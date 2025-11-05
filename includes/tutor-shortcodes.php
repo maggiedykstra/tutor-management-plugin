@@ -9,6 +9,7 @@ function gtp_TA_dashboard_shortcode() {
 
     ob_start();
     ?>
+    <button onclick="history.back()">Go Back</button>
     <div style="max-width:600px; margin:30px auto; padding:20px; background:#f1f1f1; border-radius:10px;">
         <h2>Welcome, <?php echo $name; ?>!</h2>
 
@@ -103,6 +104,7 @@ function gtp_log_session_shortcode() {
 
     ob_start();
     ?>
+    <button onclick="history.back()">Go Back</button>
     <form method="post" style="max-width:600px; margin:20px auto; padding:20px; background:#f9f9f9; border-radius:8px;">
         <h2>Log a Session</h2>
 
