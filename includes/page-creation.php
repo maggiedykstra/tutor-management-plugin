@@ -17,7 +17,8 @@ function gtp_create_required_pages() {
         'Welcome-to-GTP'        => '<!-- wp:shortcode -->[gtp_login]<!-- /wp:shortcode -->',
         'admin-dashboard'       => '<!-- wp:shortcode -->[gtp_admin_dashboard]<!-- /wp:shortcode -->',
         'TA-dashboard'          => '<!-- wp:shortcode -->[gtp_TA_dashboard]<!-- /wp:shortcode -->',
-        'registration-page'     => '<button onclick="history.back()">Go Back</button><h2>Register your GTP account here</h2>',
+        'registration-page'     => '<button onclick="history.back()">Go Back</button><!-- wp:shortcode -->[gtp_registration_page]<!-- /wp:shortcode -->',
+        'registration-confirmation' => 'GTP administrators are reviewing your registration. Once approved, you will be able to log in!',
 
         // Newly added pages
         'TA-profile'            => '<button onclick="history.back()">Go Back</button><h2>My Profile (TA)</h2>',

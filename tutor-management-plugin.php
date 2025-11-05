@@ -49,6 +49,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/schema.php';
 require_once plugin_dir_path(__FILE__) . 'includes/WP-admin-pages.php';
 require_once plugin_dir_path(__FILE__) . 'includes/login-shortcodes.php';
 require_once plugin_dir_path(__FILE__) . 'includes/page-creation.php';
+require_once plugin_dir_path(__FILE__) . 'includes/tutor-shortcodes.php';
 require_once plugin_dir_path(__FILE__) . 'includes/helperfxns.php';
 require_once plugin_dir_path(__FILE__) . 'includes/devonly-db.php';
 require_once plugin_dir_path(__FILE__) . 'includes/auth.php';
