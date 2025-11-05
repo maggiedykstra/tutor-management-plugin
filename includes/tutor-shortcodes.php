@@ -103,6 +103,8 @@ function gtp_log_session_shortcode() {
     <form method="post" style="max-width:600px; margin:20px auto; padding:20px; background:#f9f9f9; border-radius:8px;">
         <h2>Log a Session</h2>
 
+        <p><a href="<?php echo esc_url(site_url('/index.php/ta-dashboard/')); ?>" class="button">← Back to Dashboard</a></p>
+
         <label>Select Subject:</label><br>
         <select id="gtp-subject-select" name="subject" required style="width:100%; padding:8px; margin-bottom:10px; box-sizing: border-box;">
             <option value="">-- Select a Subject --</option>
@@ -205,6 +207,8 @@ function gtp_log_substitute_session_shortcode() {
     ?>
     <form method="post" style="max-width:600px; margin:20px auto; padding:20px; background:#f9f9f9; border-radius:8px;">
         <h2>Log a Substitute Session</h2>
+
+        <p><a href="<?php echo esc_url(site_url('/index.php/ta-dashboard/')); ?>" class="button">← Back to Dashboard</a></p>
 
         <label>Select Subject:</label><br>
         <select id="gtp-subject-select" name="subject" required style="width:100%; padding:8px; margin-bottom:10px; box-sizing: border-box;">
@@ -309,6 +313,8 @@ function gtp_ta_profile_shortcode() {
     ?>
     <div style="max-width:600px; margin:20px auto; padding:20px; background:#f9f9f9; border-radius:8px;">
         <h2>My Profile</h2>
+
+        <p><a href="<?php echo esc_url(site_url('/index.php/ta-dashboard/')); ?>" class="button">← Back to Dashboard</a></p>
 
         <form method="post" enctype="multipart/form-data">
             <?php wp_nonce_field('gtp_update_profile', 'gtp_profile_nonce'); ?>
