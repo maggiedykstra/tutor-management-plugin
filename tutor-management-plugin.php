@@ -5,7 +5,7 @@ Description: A custom plugin for managing tutors and students.
 Version: 1.0
 Author: Maggie Dykstra
 */
-define('GTP_DB_VERSION', '1.5'); // Increment this when schema changes
+define('GTP_DB_VERSION', '1.6'); // Increment this when schema changes
 
 
 add_action('init', 'gtp_start_session', 1);
@@ -56,6 +56,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/devonly-db.php';
 require_once plugin_dir_path(__FILE__) . 'includes/auth.php';
 require_once plugin_dir_path(__FILE__) . 'includes/GTP-admin-dash.php';
 require_once plugin_dir_path(__FILE__) . 'includes/ajax-handlers.php';
+require_once plugin_dir_path(__FILE__) . 'includes/session-filter-shortcode.php';
 
 function gtp_enqueue_log_session_scripts() {
     global $post;
