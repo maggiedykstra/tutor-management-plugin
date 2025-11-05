@@ -11,8 +11,9 @@ function gtp_admin_dashboard_shortcode() {
 
     ob_start();
     ?>
-    <button onclick="history.back()">Go Back</button>
-    <div style="max-width:600px; margin:30px auto; padding:20px; background:#f1f1f1; border-radius:10px;">
+   <!--- <button onclick="history.back()">Go Back</button>
+   <div style="max-width:600px; margin:30px auto; padding:20px; background:#f1f1f1; border-radius:10px;">
+    -->
         <h2>Welcome, <?php echo $name; ?>!</h2>
 
         <div style="margin-top:20px;">
