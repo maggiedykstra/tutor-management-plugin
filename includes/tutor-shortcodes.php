@@ -9,7 +9,6 @@ function gtp_TA_dashboard_shortcode() {
 
     ob_start();
     ?>
-    <button onclick="history.back()">Go Back</button>
     <div style="max-width:600px; margin:30px auto; padding:20px; background:#f1f1f1; border-radius:10px;">
         <h2>Welcome, <?php echo $name; ?>!</h2>
 
@@ -53,11 +52,6 @@ function gtp_log_session_shortcode() {
     $first_name = $_SESSION['gtp_user']['first_name'];
     $last_name = $_SESSION['gtp_user']['last_name'];
     $username = $_SESSION['gtp_user']['username'];
-    // Get classroom info
-    $classroom = $wpdb->get_row(
-        $wpdb->prepare("SELECT * FROM {$wpdb->prefix}gtp_classrooms WHERE id = %d", $classroom_id)
-    );
-
 
     // Handle form submission
     if (isset($_POST['gtp_submit_session'])) {
@@ -87,9 +81,10 @@ function gtp_log_session_shortcode() {
             ]);
             if ($wpdb->last_error) {
                 echo '<p style="color:red;">DB Error: ' . esc_html($wpdb->last_error) . '</p>';
+            } else {
+                wp_redirect(site_url('/index.php/ta-dashboard/'));
+                exit;
             }
-            wp_redirect(site_url('/index.php/ta-dashboard/'));
-            exit;
         }
     }
 
@@ -105,9 +100,10 @@ function gtp_log_session_shortcode() {
 
     ob_start();
     ?>
-    <button onclick="history.back()">Go Back</button>
     <form method="post" style="max-width:600px; margin:20px auto; padding:20px; background:#f9f9f9; border-radius:8px;">
         <h2>Log a Session</h2>
+
+        <p><a href="<?php echo esc_url(site_url('/index.php/ta-dashboard/')); ?>" class="button">← Back to Dashboard</a></p>
 
         <label>Select Subject:</label><br>
         <select id="gtp-subject-select" name="subject" required style="width:100%; padding:8px; margin-bottom:10px; box-sizing: border-box;">
@@ -148,3 +144,209 @@ function gtp_log_session_shortcode() {
     return ob_get_clean();
 }
 add_shortcode('gtp_log_session', 'gtp_log_session_shortcode');
+
+function gtp_log_substitute_session_shortcode() {
+    global $wpdb;
+
+    // Check login and role
+    if (!isset($_SESSION['gtp_user']) || $_SESSION['gtp_user']['role'] !== 'tutor') {
+        return '<p>You do not have access to this page.</p>';
+    }
+
+    $tutor_id = $_SESSION['gtp_user']['id'];
+    $first_name = $_SESSION['gtp_user']['first_name'];
+    $last_name = $_SESSION['gtp_user']['last_name'];
+    $username = $_SESSION['gtp_user']['username'];
+
+    // Handle form submission
+    if (isset($_POST['gtp_submit_session'])) {
+        $classroom_id = intval($_POST['classroom_id']);
+        $session_date = sanitize_text_field($_POST['session_date']);
+        $attendance = isset($_POST['attendance']) ? json_encode(array_map('intval', $_POST['attendance'])) : '';
+        $topic = sanitize_textarea_field($_POST['topic']);
+        $comments = sanitize_textarea_field($_POST['comments']);
+        $is_sub = 1; // Always a substitute session
+        $classroom = $wpdb->get_row(
+            $wpdb->prepare("SELECT * FROM {$wpdb->prefix}gtp_classrooms WHERE id = %d", $classroom_id)
+        );
+
+        if ($classroom) {
+            $wpdb->insert($wpdb->prefix . 'gtp_sessions', [
+                'tutor_username' => $username,
+                'first_name'     => $first_name,
+                'last_name'      => $last_name,
+                'school'         => $classroom->school,
+                'subject'        => $classroom->subject,
+                'teacher_name'   => $classroom->teacher_first_name . ' ' . $classroom->teacher_last_name,
+                'session_date'   => $session_date,
+                'attendance'     => $attendance,
+                'topic'          => $topic,
+                'comments'       => $comments,
+                'is_substitute'  => $is_sub
+            ]);
+            if ($wpdb->last_error) {
+                echo '<p style="color:red;">DB Error: ' . esc_html($wpdb->last_error) . '</p>';
+            } else {
+                wp_redirect(site_url('/index.php/ta-dashboard/'));
+                exit;
+            }
+        }
+    }
+
+    // Get assigned subjects for the tutor
+    $subjects = $wpdb->get_col(
+        $wpdb->prepare(
+            "SELECT DISTINCT c.subject FROM {$wpdb->prefix}gtp_classrooms c
+             JOIN {$wpdb->prefix}gtp_class_assignments a ON c.id = a.classroom_id
+             WHERE a.tutor_id = %d ORDER BY c.subject ASC",
+            $tutor_id
+        )
+    );
+
+    ob_start();
+    ?>
+    <form method="post" style="max-width:600px; margin:20px auto; padding:20px; background:#f9f9f9; border-radius:8px;">
+        <h2>Log a Substitute Session</h2>
+
+        <p><a href="<?php echo esc_url(site_url('/index.php/ta-dashboard/')); ?>" class="button">← Back to Dashboard</a></p>
+
+        <label>Select Subject:</label><br>
+        <select id="gtp-subject-select" name="subject" required style="width:100%; padding:8px; margin-bottom:10px; box-sizing: border-box;">
+            <option value="">-- Select a Subject --</option>
+            <?php foreach ($subjects as $subject): ?>
+                <option value="<?php echo esc_attr($subject); ?>"><?php echo esc_html($subject); ?></option>
+            <?php endforeach; ?>
+        </select>
+
+        <label>Select Class:</label><br>
+        <select name="classroom_id" id="gtp-classroom-select" required style="width:100%; padding:8px; margin-bottom:10px; box-sizing: border-box;" disabled>
+            <option value="">-- Select a subject first --</option>
+        </select>
+
+        <label>Date:</label><br>
+        <input type="date" name="session_date" required style="width:100%; padding:8px; margin-bottom:10px; box-sizing: border-box;">
+
+        <label>Attendance:</label>
+        <div id="attendance-checklist-container" style="margin-bottom: 10px; border: 1px solid #ccc; padding: 10px; max-height: 200px; overflow-y: auto;">
+            <!-- Student checklist will be loaded here -->
+        </div>
+        <div style="margin-bottom: 20px;">
+            <input type="text" id="new-student-name" placeholder="Enter new student name" style="width: 70%; padding: 8px; box-sizing: border-box;">
+            <button type="button" id="add-student-button" class="button" style="width: 28%; float: right;">Add Student</button>
+        </div>
+
+        <label>Topic Covered:</label>
+        <textarea name="topic" required style="width:100%; height:60px; margin-bottom:10px; box-sizing: border-box;"></textarea>
+
+        <label>Comments (optional):</label>
+        <textarea name="comments" style="width:100%; height:60px; margin-bottom:10px; box-sizing: border-box;"></textarea>
+
+        <input type="hidden" name="is_substitute" value="1">
+
+        <input type="submit" name="gtp_submit_session" value="Log Session" class="button button-primary">
+    </form>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('gtp_log_substitute_session', 'gtp_log_substitute_session_shortcode');
+
+function gtp_ta_profile_shortcode() {
+    global $wpdb;
+    $tutor_id = $_SESSION['gtp_user']['id'];
+    $table_name = $wpdb->prefix . 'gtp_users';
+
+    // Handle form submission
+    if (isset($_POST['gtp_update_profile'])) {
+        // Verify nonce
+        if (!isset($_POST['gtp_profile_nonce']) || !wp_verify_nonce($_POST['gtp_profile_nonce'], 'gtp_update_profile')) {
+            return 'Nonce verification failed!';
+        }
+
+        // Handle headshot upload
+        if (!empty($_FILES['headshot']['name'])) {
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+            $uploadedfile = $_FILES['headshot'];
+            $upload_overrides = ['test_form' => false];
+            $movefile = wp_handle_upload($uploadedfile, $upload_overrides);
+
+            if ($movefile && !isset($movefile['error'])) {
+                $headshot_url = $movefile['url'];
+                $wpdb->update(
+                    $table_name,
+                    ['headshot_url' => $headshot_url],
+                    ['id' => $tutor_id]
+                );
+            } else {
+                echo '<p style="color:red;">' . esc_html($movefile['error']) . '</p>';
+            }
+        }
+
+        // Update bio
+        $bio = sanitize_textarea_field($_POST['bio']);
+        $wpdb->update(
+            $table_name,
+            ['bio' => $bio],
+            ['id' => $tutor_id]
+        );
+
+        // Update subject preferences
+        $subject_preferences = isset($_POST['subject_preferences']) ? array_map('sanitize_text_field', $_POST['subject_preferences']) : [];
+        $wpdb->update(
+            $table_name,
+            ['subject_preferences' => json_encode($subject_preferences)],
+            ['id' => $tutor_id]
+        );
+
+        echo '<p style="color:green;">Profile updated successfully!</p>';
+    }
+
+    // Fetch tutor data
+    $tutor = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $tutor_id));
+
+    $bio = $tutor->bio;
+    $headshot_url = $tutor->headshot_url;
+    $subject_preferences = json_decode($tutor->subject_preferences, true) ?: [];
+
+    $all_subjects = ['Computer Science', 'Biology', 'Statistics', 'Physics'];
+
+    ob_start();
+    ?>
+    <div style="max-width:600px; margin:20px auto; padding:20px; background:#f9f9f9; border-radius:8px;">
+        <h2>My Profile</h2>
+
+        <p><a href="<?php echo esc_url(site_url('/index.php/ta-dashboard/')); ?>" class="button">← Back to Dashboard</a></p>
+
+        <form method="post" enctype="multipart/form-data">
+            <?php wp_nonce_field('gtp_update_profile', 'gtp_profile_nonce'); ?>
+
+            <h3>Headshot</h3>
+            <?php if ($headshot_url): ?>
+                <img src="<?php echo esc_url($headshot_url); ?>" alt="Your headshot" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 10px;">
+            <?php endif; ?>
+            <p>
+                <label for="headshot">Upload new headshot:</label><br>
+                <input type="file" id="headshot" name="headshot" accept="image/*">
+            </p>
+
+            <h3>Website Bio</h3>
+            <p>
+                <textarea name="bio" style="width:100%; height:150px; box-sizing: border-box;"><?php echo esc_textarea($bio); ?></textarea>
+            </p>
+
+            <h3>Subject Preferences</h3>
+            <div style="margin-bottom: 20px;">
+                <?php foreach ($all_subjects as $subject): ?>
+                    <div>
+                        <input type="checkbox" name="subject_preferences[]" value="<?php echo esc_attr($subject); ?>" <?php checked(in_array($subject, $subject_preferences)); ?>>
+                        <?php echo esc_html($subject); ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <input type="submit" name="gtp_update_profile" value="Save Profile" class="button button-primary">
+        </form>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('gtp_ta_profile', 'gtp_ta_profile_shortcode');
