@@ -9,7 +9,7 @@ function gtp_create_pages_once() {
 }
 
 // // use below to reset the pages if you delete then
-delete_option('gtp_pages_created');
+// delete_option('gtp_pages_created');
 
 
 function gtp_create_required_pages() {
@@ -17,15 +17,15 @@ function gtp_create_required_pages() {
         'Welcome-to-GTP'        => '<!-- wp:shortcode -->[gtp_login]<!-- /wp:shortcode -->',
         'admin-dashboard'       => '<!-- wp:shortcode -->[gtp_admin_dashboard]<!-- /wp:shortcode -->',
         'TA-dashboard'          => '<!-- wp:shortcode -->[gtp_TA_dashboard]<!-- /wp:shortcode -->',
-        'registration-page'     => '<!-- wp:shortcode -->[gtp_registration_page]<!-- /wp:shortcode -->',
+        'registration-page'     => '<button onclick="history.back()">Go Back</button><!-- wp:shortcode -->[gtp_registration_page]<!-- /wp:shortcode -->',
         'registration-confirmation' => 'GTP administrators are reviewing your registration. Once approved, you will be able to log in!',
 
         // Newly added pages
-        'TA-profile'            => '<h2>My Profile (TA)</h2>',
+        'TA-profile'            => '<button onclick="history.back()">Go Back</button><h2>My Profile (TA)</h2>',
         'log-session'           => '<!-- wp:shortcode -->[gtp_log_session]<!-- /wp:shortcode -->',
-        'log-substitute'        => '<h2>Log Substitute Session</h2>',
-        'new-ta-registration'   => '<h2>Validate or Register a New TA</h2>',
-        'ta-session-filter'     => '<h2>Filter and Review TA Sessions</h2>',
+        'log-substitute'        => '<button onclick="history.back()">Go Back</button><h2>Log Substitute Session</h2>',
+        'new-ta-registration'   => '<button onclick="history.back()">Go Back</button><h2>Validate or Register a New TA</h2>',
+        'ta-session-filter'     => '<button onclick="history.back()">Go Back</button><h2>Filter and Review TA Sessions</h2>',
         'add-classroom'         => '<!-- wp:shortcode -->[gtp_add_classroom]<!-- /wp:shortcode -->',
     ];
 
