@@ -1,5 +1,3 @@
-
-
 <?php
 function gtp_admin_dashboard_shortcode() {
     // Check if user is logged in via session
@@ -11,9 +9,8 @@ function gtp_admin_dashboard_shortcode() {
 
     ob_start();
     ?>
-   <!--- <button onclick="history.back()">Go Back</button>
+   <!-- <button onclick="history.back()">Go Back</button> -->
    <div style="max-width:600px; margin:30px auto; padding:20px; background:#f1f1f1; border-radius:10px;">
-    -->
         <h2>Welcome, <?php echo $name; ?>!</h2>
 
         <div style="margin-top:20px;">
@@ -50,6 +47,8 @@ function gtp_add_classroom_shortcode() {
 
     global $wpdb;
     $message = '';
+
+
 
     // Handle form submission
     if (isset($_POST['gtp_add_classroom'])) {
@@ -139,3 +138,80 @@ function gtp_add_classroom_shortcode() {
 }
 add_shortcode('gtp_add_classroom', 'gtp_add_classroom_shortcode');
 
+
+function gtp_validate_shortcode() {
+    echo 'DEBUG: Function called.<br>'; // Debugging line
+
+    // Restrict access to admin users
+    if (!isset($_SESSION['gtp_user']) || $_SESSION['gtp_user']['role'] !== 'admin') {
+        return '<p>You do not have access to this page.</p>';
+    }
+    echo 'DEBUG: Security check passed.<br>'; // Debugging line
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'gtp_users';
+    $message = '';
+
+    // Handle validation/denial
+    if (isset($_POST['gtp_validate_user'])) {
+        $user_id = intval($_POST['user_id']);
+        if (isset($_POST['approve'])) {
+            $wpdb->update($table_name, ['role' => 'tutor'], ['id' => $user_id]);
+            $message = '<p style="color:green;">User approved as a Tutor.</p>';
+        } elseif (isset($_POST['deny'])) {
+            $wpdb->delete($table_name, ['id' => $user_id]);
+            $message = '<p style="color:orange;">User denied and deleted.</p>';
+        }
+    }
+
+    // Get all users who are not admins or tutors (e.g., pending validation)
+    $pending_users = $wpdb->get_results("SELECT * FROM $table_name WHERE role NOT IN ('admin', 'tutor')");
+
+    echo 'DEBUG: Database query executed. Result:<br>'; // Debugging line
+    echo '<pre>'; var_dump($pending_users); echo '</pre>'; // Debugging line
+
+    ob_start();
+    ?>
+    <button onclick="history.back()">Go Back</button>
+    <div style="max-width:800px; margin:30px auto; padding:20px; background:#f1f1f1; border-radius:10px;">
+        <h2>Validate or Register a New TA</h2>
+        <?php echo $message; ?>
+
+        <h3>Pending Validation</h3>
+        <?php if (!empty($pending_users)) : ?>
+            <table class="wp-list-table widefat striped">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($pending_users as $user) : ?>
+                        <tr>
+                            <td><?php echo esc_html($user->username); ?></td>
+                            <td><?php echo esc_html($user->first_name . ' ' . $user->last_name); ?></td>
+                            <td><?php echo esc_html($user->email); ?></td>
+                            <td><?php echo esc_html($user->role); ?></td>
+                            <td>
+                                <form method="post" style="display:inline;">
+                                    <input type="hidden" name="user_id" value="<?php echo $user->id; ?>">
+                                    <button type="submit" name="approve" class="button button-primary">Approve</button>
+                                    <button type="submit" name="deny" class="button button-secondary">Deny</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else : ?>
+            <p>No users are currently pending validation.</p>
+        <?php endif; ?>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('ta_registration', 'gtp_validate_shortcode');
