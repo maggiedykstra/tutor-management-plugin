@@ -5,7 +5,7 @@ Description: A custom plugin for managing tutors and students.
 Version: 1.0
 Author: Maggie Dykstra
 */
-define('GTP_DB_VERSION', '1.3'); // Increment this when schema changes
+define('GTP_DB_VERSION', '1.4'); // Increment this when schema changes
 
 
 add_action('init', 'gtp_start_session', 1);
@@ -27,8 +27,9 @@ function gtp_update_db_schema() {
     gtp_create_sessions_table();          // From earlier
     gtp_create_classrooms_table();        // ✅ New
     gtp_create_class_assignments_table(); // ✅ New
+    gtp_create_students_table();          // ✅ New
 
-    update_option('gtp_db_version', '1.3');
+    update_option('gtp_db_version', '1.4');
 }
 
 register_activation_hook(__FILE__, 'gtp_update_db_schema');
@@ -54,5 +55,23 @@ require_once plugin_dir_path(__FILE__) . 'includes/helperfxns.php';
 require_once plugin_dir_path(__FILE__) . 'includes/devonly-db.php';
 require_once plugin_dir_path(__FILE__) . 'includes/auth.php';
 require_once plugin_dir_path(__FILE__) . 'includes/GTP-admin-dash.php';
+require_once plugin_dir_path(__FILE__) . 'includes/ajax-handlers.php';
 
-
+function gtp_enqueue_log_session_scripts() {
+    global $post;
+    if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'gtp_log_session')) {
+        wp_enqueue_script(
+            'gtp-log-session',
+            plugin_dir_url(__FILE__) . 'assets/js/log-session.js',
+            [],
+            '1.0',
+            true
+        );
+        wp_localize_script(
+            'gtp-log-session',
+            'gtp_ajax',
+            ['ajax_url' => admin_url('admin-ajax.php')]
+        );
+    }
+}
+add_action('wp_enqueue_scripts', 'gtp_enqueue_log_session_scripts');

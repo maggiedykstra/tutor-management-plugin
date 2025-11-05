@@ -61,7 +61,8 @@ function gtp_log_session_shortcode() {
     // Handle form submission
     if (isset($_POST['gtp_submit_session'])) {
         $classroom_id = intval($_POST['classroom_id']);
-        $attendance = sanitize_textarea_field($_POST['attendance']);
+        $session_date = sanitize_text_field($_POST['session_date']);
+        $attendance = isset($_POST['attendance']) ? json_encode(array_map('intval', $_POST['attendance'])) : '';
         $topic = sanitize_textarea_field($_POST['topic']);
         $comments = sanitize_textarea_field($_POST['comments']);
         $is_sub = isset($_POST['is_substitute']) ? 1 : 0;
@@ -76,8 +77,8 @@ function gtp_log_session_shortcode() {
                 'last_name'      => $last_name,
                 'school'         => $classroom->school,
                 'subject'        => $classroom->subject,
-                'teacher_name'   => $classroom->teacher_name,
-                'session_date'   => current_time('mysql'),
+                'teacher_name'   => $classroom->teacher_first_name . ' ' . $classroom->teacher_last_name,
+                'session_date'   => $session_date,
                 'attendance'     => $attendance,
                 'topic'          => $topic,
                 'comments'       => $comments,
@@ -86,17 +87,17 @@ function gtp_log_session_shortcode() {
             if ($wpdb->last_error) {
                 echo '<p style="color:red;">DB Error: ' . esc_html($wpdb->last_error) . '</p>';
             }
-            echo '<p style="color: green;">Session logged successfully!</p>';
+            wp_redirect(site_url('/index.php/ta-dashboard/'));
+            exit;
         }
     }
 
-    // Get assigned classrooms
-    $classes = $wpdb->get_results(
+    // Get assigned subjects for the tutor
+    $subjects = $wpdb->get_col(
         $wpdb->prepare(
-            "SELECT c.* FROM {$wpdb->prefix}gtp_classrooms c
-             JOIN {$wpdb->prefix}gtp_class_assignments a
-             ON c.id = a.classroom_id
-             WHERE a.tutor_id = %d",
+            "SELECT DISTINCT c.subject FROM {$wpdb->prefix}gtp_classrooms c
+             JOIN {$wpdb->prefix}gtp_class_assignments a ON c.id = a.classroom_id
+             WHERE a.tutor_id = %d ORDER BY c.subject ASC",
             $tutor_id
         )
     );
@@ -106,23 +107,36 @@ function gtp_log_session_shortcode() {
     <form method="post" style="max-width:600px; margin:20px auto; padding:20px; background:#f9f9f9; border-radius:8px;">
         <h2>Log a Session</h2>
 
-        <label>Select Class:</label><br>
-        <select name="classroom_id" required style="width:100%; padding:8px; margin-bottom:10px;">
-            <?php foreach ($classes as $class): ?>
-                <option value="<?php echo $class->id; ?>">
-                    <?php echo esc_html("{$class->school} – {$class->subject} with {$class->teacher_name}"); ?>
-                </option>
+        <label>Select Subject:</label><br>
+        <select id="gtp-subject-select" name="subject" required style="width:100%; padding:8px; margin-bottom:10px; box-sizing: border-box;">
+            <option value="">-- Select a Subject --</option>
+            <?php foreach ($subjects as $subject): ?>
+                <option value="<?php echo esc_attr($subject); ?>"><?php echo esc_html($subject); ?></option>
             <?php endforeach; ?>
         </select>
 
+        <label>Select Class:</label><br>
+        <select name="classroom_id" id="gtp-classroom-select" required style="width:100%; padding:8px; margin-bottom:10px; box-sizing: border-box;" disabled>
+            <option value="">-- Select a subject first --</option>
+        </select>
+
+        <label>Date:</label><br>
+        <input type="date" name="session_date" required style="width:100%; padding:8px; margin-bottom:10px; box-sizing: border-box;">
+
         <label>Attendance:</label>
-        <textarea name="attendance" required style="width:100%; height:60px; margin-bottom:10px;"></textarea>
+        <div id="attendance-checklist-container" style="margin-bottom: 10px; border: 1px solid #ccc; padding: 10px; max-height: 200px; overflow-y: auto;">
+            <!-- Student checklist will be loaded here -->
+        </div>
+        <div style="margin-bottom: 20px;">
+            <input type="text" id="new-student-name" placeholder="Enter new student name" style="width: 70%; padding: 8px; box-sizing: border-box;">
+            <button type="button" id="add-student-button" class="button" style="width: 28%; float: right;">Add Student</button>
+        </div>
 
         <label>Topic Covered:</label>
-        <textarea name="topic" required style="width:100%; height:60px; margin-bottom:10px;"></textarea>
+        <textarea name="topic" required style="width:100%; height:60px; margin-bottom:10px; box-sizing: border-box;"></textarea>
 
         <label>Comments (optional):</label>
-        <textarea name="comments" style="width:100%; height:60px; margin-bottom:10px;"></textarea>
+        <textarea name="comments" style="width:100%; height:60px; margin-bottom:10px; box-sizing: border-box;"></textarea>
 
         <label><input type="checkbox" name="is_substitute"> Substitute Session</label><br><br>
 

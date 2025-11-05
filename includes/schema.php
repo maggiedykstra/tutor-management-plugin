@@ -85,7 +85,20 @@ function gtp_create_class_assignments_table() {
     dbDelta($sql);
 }
 
+function gtp_create_students_table() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'gtp_students';
+    $charset_collate = $wpdb->get_charset_collate();
 
+    $sql = "CREATE TABLE $table_name (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        student_name varchar(100) NOT NULL,
+        classroom_id mediumint(9) NOT NULL,
+        date_added datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+        PRIMARY KEY  (id),
+        KEY classroom_id (classroom_id)
+    ) $charset_collate;";
 
-
-
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+    dbDelta($sql);
+}
