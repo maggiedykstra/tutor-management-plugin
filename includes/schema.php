@@ -46,6 +46,7 @@ function gtp_create_sessions_table() {
         topic text NOT NULL,
         comments text,
         is_substitute tinyint(1) NOT NULL DEFAULT 0,
+        classroom_id mediumint(9) NOT NULL,
         PRIMARY KEY (id)
     ) $charset_collate;";
 
