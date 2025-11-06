@@ -13,21 +13,26 @@ function gtp_admin_dashboard_shortcode() {
    <div style="max-width:600px; margin:30px auto; padding:20px; background:#f1f1f1; border-radius:10px;">
         <h2>Welcome, <?php echo $name; ?>!</h2>
 
-        <div style="margin-top:20px;">
-            <form action="<?php echo esc_url(site_url('/index.php/new-ta-registration')); ?>" method="get" style="display:inline-block; margin-right:15px;">
+        <div style="margin-top:20px; display: flex; gap: 15px;">
+            <form action="<?php echo esc_url(site_url('/index.php/new-ta-registration')); ?>" method="get">
                 <button type="submit" style="padding:10px 20px; background:#0073aa; color:white; border:none; border-radius:5px; cursor:pointer;">
                     Validate TAs
                 </button>
             </form>
 
-            <form action="<?php echo esc_url(site_url('/index.php/ta-session-filter')); ?>" method="get" style="display:inline-block;">
+            <form action="<?php echo esc_url(site_url('/index.php/ta-session-filter')); ?>" method="get">
                 <button type="submit" style="padding:10px 20px; background:#0073aa; color:white; border:none; border-radius:5px; cursor:pointer;">
                     Filter TA Sessions and Hours
                 </button>
             </form>
-            <form action="<?php echo esc_url(site_url('/index.php/add-classroom')); ?>" method="get" style="display:inline-block; margin-right:15px;">
+            <form action="<?php echo esc_url(site_url('/index.php/add-classroom')); ?>" method="get">
                 <button type="submit" style="padding:10px 20px; background:#0073aa; color:white; border:none; border-radius:5px; cursor:pointer;">
                     Add Classrooms
+                </button>
+            </form>
+            <form action="<?php echo esc_url(site_url('/index.php/edit-classrooms')); ?>" method="get">
+                <button type="submit" style="padding:10px 20px; background:#0073aa; color:white; border:none; border-radius:5px; cursor:pointer;">
+                    Edit Classrooms
                 </button>
             </form>
         </div>
@@ -56,6 +61,8 @@ function gtp_add_classroom_shortcode() {
         $subject = sanitize_text_field($_POST['subject']);
         $teacher_first_name = sanitize_text_field($_POST['teacher_first_name']);
         $teacher_last_name = sanitize_text_field($_POST['teacher_last_name']);
+        $time_slot = sanitize_text_field($_POST['time_slot']);
+        $roster = sanitize_textarea_field($_POST['roster']);
 
         // If "Other" is selected, override with custom subject
         if ($subject === 'Other' && !empty($_POST['custom_subject'])) {
@@ -69,25 +76,45 @@ function gtp_add_classroom_shortcode() {
                     'school'       => $school,
                     'subject'      => $subject,
                     'teacher_first_name' => $teacher_first_name,
-                    'teacher_last_name' => $teacher_last_name
+                    'teacher_last_name' => $teacher_last_name,
+                    'time_slot'    => $time_slot,
                 ]
             );
 
             if ($wpdb->last_error) {
                 $message = '<p style="color:red;">Database Error: ' . esc_html($wpdb->last_error) . '</p>';
             } else {
+                $classroom_id = $wpdb->insert_id;
                 $message = '<p style="color:green;">Classroom added successfully!</p>';
+
+                // Handle the roster
+                if (!empty($roster)) {
+                    $student_names = explode("\n", $roster);
+                    $students_table = $wpdb->prefix . 'gtp_students';
+
+                    foreach ($student_names as $student_name) {
+                        $student_name = trim($student_name);
+                        if (!empty($student_name)) {
+                            $wpdb->insert(
+                                $students_table,
+                                [
+                                    'classroom_id' => $classroom_id,
+                                    'student_name' => $student_name,
+                                ]
+                            );
+                        }
+                    }
+                }
             }
         } else {
-            $message = '<p style="color:red;">Please fill out all fields.</p>';
+            $message = '<p style="color:red;">Please fill out all required fields.</p>';
         }
     }
 
     ob_start();
     ?>
-    <button onclick="history.back()">Go Back</button>
-    <div style="max-width:600px; margin:30px auto; padding:20px; background:#f9f9f9; border-radius:10px;">
-        <h2>Add a New Classroom</h2>
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <a href="<?php echo esc_url(site_url('/index.php/admin-dashboard/')); ?>" class="button">Go Back to Admin Dashboard</a>
         <?php echo $message; ?>
         <form method="post">
             <label>School:</label>
@@ -129,6 +156,12 @@ function gtp_add_classroom_shortcode() {
             
             <label>Teacher Last Name:</label>
             <input type="text" name="teacher_last_name" required style="width:100%; padding:8px; margin-bottom:10px;">
+            
+            <label>Time Slot:</label>
+            <input type="text" name="time_slot" style="width:100%; padding:8px; margin-bottom:10px;">
+
+            <label>Roster (optional, one student name per line):</label>
+            <textarea name="roster" style="width:100%; padding:8px; margin-bottom:10px;" rows="5"></textarea>
 
             <input type="submit" name="gtp_add_classroom" value="Add Classroom" style="padding:10px 20px; background:#0073aa; color:white; border:none; border-radius:5px; cursor:pointer;">
         </form>
@@ -164,8 +197,7 @@ function gtp_validate_shortcode() {
     // Get all users who are not admins or tutors (e.g., pending validation)
     $pending_users = $wpdb->get_results("SELECT * FROM  $table_name WHERE validated = 0");
 
-    echo 'DEBUG: Database query executed. Result:<br>'; // Debugging line
-    echo '<pre>'; var_dump($pending_users); echo '</pre>'; // Debugging line
+    
 
     ob_start();
     ?>

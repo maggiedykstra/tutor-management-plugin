@@ -52,10 +52,7 @@ function gtp_get_classrooms_for_subject() {
     $assignments_table = $wpdb->prefix . 'gtp_class_assignments';
 
     $classrooms = $wpdb->get_results($wpdb->prepare(
-        "SELECT c.id, c.school, c.teacher_first_name, c.teacher_last_name FROM $classrooms_table c
-         JOIN $assignments_table a ON c.id = a.classroom_id
-         WHERE a.tutor_id = %d AND c.subject = %s",
-        $tutor_id,
+        "SELECT id, school, teacher_first_name, teacher_last_name FROM $classrooms_table WHERE subject = %s",
         $subject
     ));
 

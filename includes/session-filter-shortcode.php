@@ -77,7 +77,8 @@ function gtp_session_filter_shortcode() {
 
     ob_start();
     ?>
-    <div style="max-width: 800px; margin: 20px auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <div style="max-width: 800px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+        <a href="<?php echo esc_url(site_url('/index.php/admin-dashboard/')); ?>" class="button">Go Back to Admin Dashboard</a>
         <h2>Filter TA Sessions</h2>
 
         <form method="get">

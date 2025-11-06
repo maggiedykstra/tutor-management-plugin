@@ -88,13 +88,10 @@ function gtp_log_session_shortcode() {
         }
     }
 
-    // Get assigned subjects for the tutor
+    // Get all subjects
     $subjects = $wpdb->get_col(
         $wpdb->prepare(
-            "SELECT DISTINCT c.subject FROM {$wpdb->prefix}gtp_classrooms c
-             JOIN {$wpdb->prefix}gtp_class_assignments a ON c.id = a.classroom_id
-             WHERE a.tutor_id = %d ORDER BY c.subject ASC",
-            $tutor_id
+            "SELECT DISTINCT subject FROM {$wpdb->prefix}gtp_classrooms ORDER BY subject ASC"
         )
     );
 
@@ -125,9 +122,10 @@ function gtp_log_session_shortcode() {
         <div id="attendance-checklist-container" style="margin-bottom: 10px; border: 1px solid #ccc; padding: 10px; max-height: 200px; overflow-y: auto;">
             <!-- Student checklist will be loaded here -->
         </div>
-        <div style="margin-bottom: 20px;">
-            <input type="text" id="new-student-name" placeholder="Enter new student name" style="width: 70%; padding: 8px; box-sizing: border-box;">
-            <button type="button" id="add-student-button" class="button" style="width: 28%; float: right;">Add Student</button>
+        <div style="margin-bottom: 20px; display: flex; align-items: center;">
+            <label for="new-student-name" style="margin-right: 10px; white-space: nowrap;">Add student:</label>
+            <input type="text" id="new-student-name" placeholder="Enter new student name" style="flex-grow: 1; padding: 8px; box-sizing: border-box; height: 38px;">
+            <button type="button" id="add-student-button" class="button" style="margin-left: 10px; height: 38px; line-height: 1; padding: 0 15px;">Add</button>
         </div>
 
         <label>Topic Covered:</label>
@@ -193,13 +191,10 @@ function gtp_log_substitute_session_shortcode() {
         }
     }
 
-    // Get assigned subjects for the tutor
+    // Get all subjects
     $subjects = $wpdb->get_col(
         $wpdb->prepare(
-            "SELECT DISTINCT c.subject FROM {$wpdb->prefix}gtp_classrooms c
-             JOIN {$wpdb->prefix}gtp_class_assignments a ON c.id = a.classroom_id
-             WHERE a.tutor_id = %d ORDER BY c.subject ASC",
-            $tutor_id
+            "SELECT DISTINCT subject FROM {$wpdb->prefix}gtp_classrooms ORDER BY subject ASC"
         )
     );
 
@@ -230,9 +225,10 @@ function gtp_log_substitute_session_shortcode() {
         <div id="attendance-checklist-container" style="margin-bottom: 10px; border: 1px solid #ccc; padding: 10px; max-height: 200px; overflow-y: auto;">
             <!-- Student checklist will be loaded here -->
         </div>
-        <div style="margin-bottom: 20px;">
-            <input type="text" id="new-student-name" placeholder="Enter new student name" style="width: 70%; padding: 8px; box-sizing: border-box;">
-            <button type="button" id="add-student-button" class="button" style="width: 28%; float: right;">Add Student</button>
+        <div style="margin-bottom: 20px; display: flex; align-items: center;">
+            <label for="new-student-name" style="margin-right: 10px; white-space: nowrap;">Add student:</label>
+            <input type="text" id="new-student-name" placeholder="Enter new student name" style="flex-grow: 1; padding: 8px; box-sizing: border-box; height: 38px;">
+            <button type="button" id="add-student-button" class="button" style="margin-left: 10px; height: 38px; line-height: 1; padding: 0 15px;">Add</button>
         </div>
 
         <label>Topic Covered:</label>

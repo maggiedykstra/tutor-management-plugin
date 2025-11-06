@@ -66,6 +66,7 @@ function gtp_create_classrooms_table() {
         subject varchar(100) NOT NULL,
         teacher_first_name varchar(100) NOT NULL,
         teacher_last_name varchar(100) NOT NUll,
+        time_slot varchar(100),
         PRIMARY KEY (id)
     ) $charset_collate;";
 
