@@ -140,14 +140,11 @@ add_shortcode('gtp_add_classroom', 'gtp_add_classroom_shortcode');
 
 
 function gtp_validate_shortcode() {
-    echo 'DEBUG: Function called.<br>'; // Debugging line
-
     // Restrict access to admin users
     if (!isset($_SESSION['gtp_user']) || $_SESSION['gtp_user']['role'] !== 'admin') {
         return '<p>You do not have access to this page.</p>';
     }
-    echo 'DEBUG: Security check passed.<br>'; // Debugging line
-
+   
     global $wpdb;
     $table_name = $wpdb->prefix . 'gtp_users';
     $message = '';
@@ -165,7 +162,7 @@ function gtp_validate_shortcode() {
     }
 
     // Get all users who are not admins or tutors (e.g., pending validation)
-    $pending_users = $wpdb->get_results("SELECT * FROM $table_name WHERE role NOT IN ('admin', 'tutor')");
+    $pending_users = $wpdb->get_results("SELECT * FROM  $table_name WHERE validated = 0");
 
     echo 'DEBUG: Database query executed. Result:<br>'; // Debugging line
     echo '<pre>'; var_dump($pending_users); echo '</pre>'; // Debugging line
@@ -214,4 +211,4 @@ function gtp_validate_shortcode() {
     <?php
     return ob_get_clean();
 }
-add_shortcode('ta_registration', 'gtp_validate_shortcode');
+add_shortcode('gtp_add_ta', 'gtp_validate_shortcode');

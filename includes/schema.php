@@ -12,6 +12,7 @@ function gtp_create_users_table(){
         username varchar(60) NOT NULL,
         password varchar(255) NOT NULL,
         role varchar(20) NOT NULL,
+        validated boolean NOT NULL,
         headshot_url varchar(255) DEFAULT '' NOT NULL,
         bio text NOT NULL,
         subject_preferences text NOT NULL,

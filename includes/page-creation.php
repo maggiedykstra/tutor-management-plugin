@@ -25,6 +25,7 @@ function gtp_create_required_pages() {
         'log-session'           => '<!-- wp:shortcode -->[gtp_log_session]<!-- /wp:shortcode -->',
         'log-substitute'        => '<!-- wp:shortcode -->[gtp_log_substitute_session]<!-- /wp:shortcode -->',
         'new-ta-registration'   => '<button onclick="history.back()">Go Back</button><h2>Validate or Register a New TA</h2>',
+        'new-ta-registration'   => '<!-- wp:shortcode -->[gtp_add_ta]<!-- /wp:shortcode -->',
         'ta-session-filter'     => '<button onclick="history.back()">Go Back</button><h2>Filter and Review TA Sessions</h2>',
         'add-classroom'         => '<!-- wp:shortcode -->[gtp_add_classroom]<!-- /wp:shortcode -->',
     ];
