@@ -1,24 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const subjectSelect = document.getElementById('gtp-subject-select');
     const classroomSelect = document.getElementById('gtp-classroom-select');
     const attendanceContainer = document.getElementById('attendance-checklist-container');
     const addStudentButton = document.getElementById('add-student-button');
     const newStudentInput = document.getElementById('new-student-name');
-
-    if (subjectSelect) {
-        subjectSelect.addEventListener('change', function () {
-            const subject = this.value;
-            classroomSelect.disabled = true;
-            classroomSelect.innerHTML = '<option value="">Loading...</option>';
-            attendanceContainer.innerHTML = '';
-
-            if (subject) {
-                fetchClassrooms(subject);
-            } else {
-                classroomSelect.innerHTML = '<option value="">-- Select a subject first --</option>';
-            }
-        });
-    }
 
     if (classroomSelect) {
         classroomSelect.addEventListener('change', function () {
@@ -37,28 +21,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const classroomId = classroomSelect.value;
             if (studentName && classroomId) {
                 addStudent(classroomId, studentName);
-            }
-        });
-    }
-
-    function fetchClassrooms(subject) {
-        const formData = new FormData();
-        formData.append('action', 'gtp_get_classrooms_for_subject');
-        formData.append('subject', subject);
-
-        fetch(gtp_ajax.ajax_url, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                let html = '<option value="">-- Select a class --</option>';
-                data.data.forEach(classroom => {
-                    html += `<option value="${classroom.id}">${classroom.school} - ${classroom.teacher_first_name} ${classroom.teacher_last_name}</option>`;
-                });
-                classroomSelect.innerHTML = html;
-                classroomSelect.disabled = false;
             }
         });
     }

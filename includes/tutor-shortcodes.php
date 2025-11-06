@@ -10,26 +10,38 @@ function gtp_TA_dashboard_shortcode() {
     ob_start();
     ?>
     <div style="max-width:600px; margin:30px auto; padding:20px; background:#f1f1f1; border-radius:10px;">
+        <?php
+        if (isset($_SESSION['gtp_session_logged_success']) && $_SESSION['gtp_session_logged_success']) {
+            echo '<div id="gtp-success-banner" style="color: green; font-weight: bold; margin-bottom: 15px;">Session logged successfully!</div>';
+            unset($_SESSION['gtp_session_logged_success']);
+        }
+        ?>
         <h2>Welcome, <?php echo $name; ?>!</h2>
 
-        
-        <form action="<?php echo esc_url(site_url('/index.php/TA-profile')); ?>" method="get" style="display:inline-block; margin-right:15px;">
+        <div style="margin-top:20px; display: flex; gap: 15px;">
+            <form action="<?php echo esc_url(site_url('/index.php/TA-profile')); ?>" method="get">
                 <button type="submit" style="padding:10px 20px; background:#0073aa; color:white; border:none; border-radius:5px; cursor:pointer;">
                     My profile
                 </button>
         </form>
 
 
-        <form action="<?php echo esc_url(site_url('/index.php/log-session')); ?>" method="get" style="display:inline-block; margin-right:15px;">
+            <form action="<?php echo esc_url(site_url('/index.php/log-session')); ?>" method="get">
                 <button type="submit" style="padding:10px 20px; background:#0073aa; color:white; border:none; border-radius:5px; cursor:pointer;">
                     Log My Sessions
                 </button>
         </form>
 
 
-        <form action="<?php echo esc_url(site_url('/index.php/log-substitute')); ?>" method="get" style="display:inline-block; margin-right:15px;">
+            <form action="<?php echo esc_url(site_url('/index.php/log-substitute')); ?>" method="get">
                 <button type="submit" style="padding:10px 20px; background:#0073aa; color:white; border:none; border-radius:5px; cursor:pointer;">
                     Log Substitute Sessions
+                </button>
+        </form>
+
+        <form action="<?php echo esc_url(site_url('/index.php/my-logged-sessions')); ?>" method="get">
+                <button type="submit" style="padding:10px 20px; background:#0073aa; color:white; border:none; border-radius:5px; cursor:pointer;">
+                    My Logged Sessions
                 </button>
         </form>
 
@@ -82,16 +94,20 @@ function gtp_log_session_shortcode() {
             if ($wpdb->last_error) {
                 echo '<p style="color:red;">DB Error: ' . esc_html($wpdb->last_error) . '</p>';
             } else {
+                $_SESSION['gtp_session_logged_success'] = true;
                 wp_redirect(site_url('/index.php/ta-dashboard/'));
                 exit;
             }
         }
     }
 
-    // Get all subjects
+    // Get assigned subjects for the tutor
     $subjects = $wpdb->get_col(
         $wpdb->prepare(
-            "SELECT DISTINCT subject FROM {$wpdb->prefix}gtp_classrooms ORDER BY subject ASC"
+            "SELECT DISTINCT c.subject FROM {$wpdb->prefix}gtp_classrooms c
+             JOIN {$wpdb->prefix}gtp_class_assignments a ON c.id = a.classroom_id
+             WHERE a.tutor_id = %d ORDER BY c.subject ASC",
+            $tutor_id
         )
     );
 
@@ -185,6 +201,7 @@ function gtp_log_substitute_session_shortcode() {
             if ($wpdb->last_error) {
                 echo '<p style="color:red;">DB Error: ' . esc_html($wpdb->last_error) . '</p>';
             } else {
+                $_SESSION['gtp_session_logged_success'] = true;
                 wp_redirect(site_url('/index.php/ta-dashboard/'));
                 exit;
             }

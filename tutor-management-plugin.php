@@ -58,6 +58,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/GTP-admin-dash.php';
 require_once plugin_dir_path(__FILE__) . 'includes/ajax-handlers.php';
 require_once plugin_dir_path(__FILE__) . 'includes/session-filter-shortcode.php';
 require_once plugin_dir_path(__FILE__) . 'includes/edit-classrooms-shortcode.php';
+require_once plugin_dir_path(__FILE__) . 'includes/my-logged-sessions-shortcode.php';
 
 function gtp_enqueue_log_session_scripts() {
     global $post;
@@ -77,3 +78,17 @@ function gtp_enqueue_log_session_scripts() {
     }
 }
 add_action('wp_enqueue_scripts', 'gtp_enqueue_log_session_scripts');
+
+function gtp_enqueue_admin_dashboard_scripts() {
+    global $post;
+    if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'gtp_TA_dashboard')) {
+        wp_enqueue_script(
+            'gtp-admin-dashboard',
+            plugin_dir_url(__FILE__) . 'assets/js/admin-dashboard.js',
+            [],
+            '1.0',
+            true
+        );
+    }
+}
+add_action('wp_enqueue_scripts', 'gtp_enqueue_admin_dashboard_scripts');

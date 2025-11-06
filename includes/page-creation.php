@@ -21,6 +21,7 @@ function gtp_create_required_pages() {
         'ta-session-filter'     => '<!-- wp:shortcode -->[gtp_session_filter]<!-- /wp:shortcode -->',
         'add-classroom'         => '<!-- wp:shortcode -->[gtp_add_classroom]<!-- /wp:shortcode -->',
         'edit-classrooms'       => '<!-- wp:shortcode -->[gtp_edit_classrooms]<!-- /wp:shortcode -->',
+        'my-logged-sessions'    => '<!-- wp:shortcode -->[gtp_my_logged_sessions]<!-- /wp:shortcode -->',
     ];
 
     foreach ($pages as $slug => $content) {
