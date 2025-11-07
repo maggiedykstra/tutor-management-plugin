@@ -325,45 +325,41 @@ function gtp_ta_profile_shortcode() {
     $headshot_url = $tutor->headshot_url;
     $subject_preferences = json_decode($tutor->subject_preferences, true) ?: [];
 
-    $all_subjects = ['Computer Science', 'Biology', 'Statistics', 'Physics'];
+    $all_subjects = ['AP Computer Science Principles', 'AP Biology', 'AP Statistics', 'AP Physics 1'];
 
     ob_start();
     ?>
     <div style="max-width:600px; margin:20px auto; padding:20px; background:#f9f9f9; border-radius:8px;">
-        <h2>My Profile</h2>
-
         <p><a href="<?php echo esc_url(site_url('/index.php/ta-dashboard/')); ?>" class="button">← Back to Dashboard</a></p>
 
         <form method="post" enctype="multipart/form-data">
             <?php wp_nonce_field('gtp_update_profile', 'gtp_profile_nonce'); ?>
 
-            <p>
-                <label for="first_name">First Name:</label><br>
-                <input type="text" id="first_name" name="first_name" value="<?php echo esc_attr($first_name); ?>" style="width:100%; padding:8px; box-sizing: border-box;">
-            </p>
-
-            <p>
-                <label for="last_name">Last Name:</label><br>
-                <input type="text" id="last_name" name="last_name" value="<?php echo esc_attr($last_name); ?>" style="width:100%; padding:8px; box-sizing: border-box;">
-            </p>
-
-
-
-            <h3>Headshot</h3>
             <?php if ($headshot_url): ?>
                 <img src="<?php echo esc_url($headshot_url); ?>" alt="Your headshot" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 10px;">
             <?php endif; ?>
+
+            <h3>First Name:</h3>
             <p>
-                <label for="headshot">Upload new headshot:</label><br>
+                <input type="text" id="first_name" name="first_name" value="<?php echo esc_attr($first_name); ?>" style="width:100%; padding:8px; box-sizing: border-box;">
+            </p>
+
+            <h3>Last Name:</h3>
+            <p>
+                <input type="text" id="last_name" name="last_name" value="<?php echo esc_attr($last_name); ?>" style="width:100%; padding:8px; box-sizing: border-box;">
+            </p>
+
+            <h3>Update Headshot:</h3>
+            <p>
                 <input type="file" id="headshot" name="headshot" accept="image/*">
             </p>
 
-            <h3>Website Bio</h3>
+            <h3>Website Bio:</h3>
             <p>
                 <textarea name="bio" style="width:100%; height:150px; box-sizing: border-box;"><?php echo esc_textarea($bio); ?></textarea>
             </p>
 
-            <h3>Subject Preferences</h3>
+            <h3>Subject Preferences:</h3>
             <div style="margin-bottom: 20px;">
                 <?php foreach ($all_subjects as $subject): ?>
                     <div>
