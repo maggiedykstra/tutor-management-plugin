@@ -272,8 +272,10 @@ function gtp_ta_profile_shortcode() {
     if (isset($_POST['gtp_update_profile'])) {
         // Verify nonce
         if (!isset($_POST['gtp_profile_nonce']) || !wp_verify_nonce($_POST['gtp_profile_nonce'], 'gtp_update_profile')) {
-            return 'Nonce verification failed!';
+            wp_die('Nonce verification failed!');
         }
+
+        $update_data = [];
 
         // Handle headshot upload
         if (!empty($_FILES['headshot']['name'])) {
@@ -283,39 +285,42 @@ function gtp_ta_profile_shortcode() {
             $movefile = wp_handle_upload($uploadedfile, $upload_overrides);
 
             if ($movefile && !isset($movefile['error'])) {
-                $headshot_url = $movefile['url'];
-                $wpdb->update(
-                    $table_name,
-                    ['headshot_url' => $headshot_url],
-                    ['id' => $tutor_id]
-                );
+                $update_data['headshot_url'] = $movefile['url'];
             } else {
                 echo '<p style="color:red;">' . esc_html($movefile['error']) . '</p>';
             }
         }
 
-        // Update bio
-        $bio = sanitize_textarea_field($_POST['bio']);
-        $wpdb->update(
-            $table_name,
-            ['bio' => $bio],
-            ['id' => $tutor_id]
-        );
-
-        // Update subject preferences
+        // Update bio, name, and subject preferences
+        $update_data['bio'] = sanitize_textarea_field($_POST['bio']);
+        $update_data['first_name'] = sanitize_text_field($_POST['first_name']);
+        $update_data['last_name'] = sanitize_text_field($_POST['last_name']);
         $subject_preferences = isset($_POST['subject_preferences']) ? array_map('sanitize_text_field', $_POST['subject_preferences']) : [];
-        $wpdb->update(
-            $table_name,
-            ['subject_preferences' => json_encode($subject_preferences)],
-            ['id' => $tutor_id]
-        );
+        $update_data['subject_preferences'] = json_encode($subject_preferences);
 
-        echo '<p style="color:green;">Profile updated successfully!</p>';
+        if (!empty($update_data)) {
+            $wpdb->update(
+                $table_name,
+                $update_data,
+                ['id' => $tutor_id]
+            );
+
+            if ($wpdb->last_error) {
+                echo '<p style="color:red;">DB Error: ' . esc_html($wpdb->last_error) . '</p>';
+            } else {
+                $_SESSION['gtp_profile_updated'] = true;
+                wp_redirect(site_url('/index.php/ta-profile/'));
+                exit;
+            }
+        } 
     }
 
     // Fetch tutor data
     $tutor = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $tutor_id));
 
+    $first_name = $tutor->first_name;
+    $last_name = $tutor->last_name;
+    $school = $tutor->school;
     $bio = $tutor->bio;
     $headshot_url = $tutor->headshot_url;
     $subject_preferences = json_decode($tutor->subject_preferences, true) ?: [];
@@ -331,6 +336,18 @@ function gtp_ta_profile_shortcode() {
 
         <form method="post" enctype="multipart/form-data">
             <?php wp_nonce_field('gtp_update_profile', 'gtp_profile_nonce'); ?>
+
+            <p>
+                <label for="first_name">First Name:</label><br>
+                <input type="text" id="first_name" name="first_name" value="<?php echo esc_attr($first_name); ?>" style="width:100%; padding:8px; box-sizing: border-box;">
+            </p>
+
+            <p>
+                <label for="last_name">Last Name:</label><br>
+                <input type="text" id="last_name" name="last_name" value="<?php echo esc_attr($last_name); ?>" style="width:100%; padding:8px; box-sizing: border-box;">
+            </p>
+
+
 
             <h3>Headshot</h3>
             <?php if ($headshot_url): ?>

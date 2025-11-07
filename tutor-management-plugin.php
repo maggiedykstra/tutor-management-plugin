@@ -5,7 +5,7 @@ Description: A custom plugin for managing tutors and students.
 Version: 1.0
 Author: Maggie Dykstra
 */
-define('GTP_DB_VERSION', '1.7'); // Increment this when schema changes
+define('GTP_DB_VERSION', '1.8'); // Increment this when schema changes
 
 
 add_action('init', 'gtp_start_session', 1);
@@ -23,14 +23,19 @@ function gtp_activate_plugin() {
 }
 
 function gtp_update_db_schema() {
-    gtp_create_users_table();             // Already exists
-    gtp_create_sessions_table();          // From earlier
-    gtp_create_classrooms_table();        // ✅ New
-    gtp_create_class_assignments_table(); // ✅ New
-    gtp_create_students_table();          // ✅ New
-
-    update_option('gtp_db_version', '1.7');
+    $installed_ver = get_option('gtp_db_version');
+    if ($installed_ver != GTP_DB_VERSION) {
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        gtp_create_users_table();
+        gtp_create_sessions_table();
+        gtp_create_classrooms_table();
+        gtp_create_class_assignments_table();
+        gtp_create_students_table();
+        update_option('gtp_db_version', GTP_DB_VERSION);
+    }
 }
+
+add_action('plugins_loaded', 'gtp_update_db_schema');
 
 register_activation_hook(__FILE__, 'gtp_update_db_schema');
 
