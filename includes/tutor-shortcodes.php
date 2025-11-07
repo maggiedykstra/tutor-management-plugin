@@ -114,7 +114,7 @@ function gtp_log_session_shortcode() {
     ob_start();
     ?>
     <form method="post" style="max-width:600px; margin:20px auto; padding:20px; background:#f9f9f9; border-radius:8px;">
-        <h2>Log a Session</h2>
+
 
         <p><a href="<?php echo esc_url(site_url('/index.php/ta-dashboard/')); ?>" class="button">← Back to Dashboard</a></p>
 

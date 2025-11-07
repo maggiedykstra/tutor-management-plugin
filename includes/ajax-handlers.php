@@ -42,6 +42,7 @@ add_action('wp_ajax_gtp_get_classrooms_for_subject', 'gtp_get_classrooms_for_sub
 function gtp_get_classrooms_for_subject() {
     global $wpdb;
     $subject = sanitize_text_field($_POST['subject']);
+    $is_substitute = isset($_POST['is_substitute']) && $_POST['is_substitute'] === 'true';
 
     if (!isset($_SESSION['gtp_user']) || $_SESSION['gtp_user']['role'] !== 'tutor') {
         wp_send_json_error('Not logged in or not a tutor.');
@@ -51,10 +52,18 @@ function gtp_get_classrooms_for_subject() {
     $classrooms_table = $wpdb->prefix . 'gtp_classrooms';
     $assignments_table = $wpdb->prefix . 'gtp_class_assignments';
 
-    $classrooms = $wpdb->get_results($wpdb->prepare(
-        "SELECT id, school, teacher_first_name, teacher_last_name FROM $classrooms_table WHERE subject = %s",
-        $subject
-    ));
+    if ($is_substitute) {
+        $classrooms = $wpdb->get_results($wpdb->prepare(
+            "SELECT id, school, teacher_first_name, teacher_last_name FROM $classrooms_table WHERE subject = %s",
+            $subject
+        ));
+    } else {
+        $classrooms = $wpdb->get_results($wpdb->prepare(
+            "SELECT c.id, c.school, c.teacher_first_name, c.teacher_last_name FROM $classrooms_table c JOIN $assignments_table a ON c.id = a.classroom_id WHERE c.subject = %s AND a.tutor_id = %d",
+            $subject,
+            $tutor_id
+        ));
+    }
 
     wp_send_json_success($classrooms);
 }

@@ -84,6 +84,25 @@ function gtp_enqueue_log_session_scripts() {
 }
 add_action('wp_enqueue_scripts', 'gtp_enqueue_log_session_scripts');
 
+function gtp_enqueue_classroom_filter_scripts() {
+    global $post;
+    if (is_a($post, 'WP_Post') && (has_shortcode($post->post_content, 'gtp_log_session') || has_shortcode($post->post_content, 'gtp_log_substitute_session'))) {
+        wp_enqueue_script(
+            'gtp-classroom-filter',
+            plugin_dir_url(__FILE__) . 'assets/js/classroom-filter.js',
+            [],
+            '1.0',
+            true
+        );
+        wp_localize_script(
+            'gtp-classroom-filter',
+            'gtp_ajax',
+            ['ajax_url' => admin_url('admin-ajax.php')]
+        );
+    }
+}
+add_action('wp_enqueue_scripts', 'gtp_enqueue_classroom_filter_scripts');
+
 function gtp_enqueue_admin_dashboard_scripts() {
     global $post;
     if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'gtp_TA_dashboard')) {
