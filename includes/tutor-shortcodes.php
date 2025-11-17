@@ -101,15 +101,13 @@ function gtp_log_session_shortcode() {
         }
     }
 
-    // Get assigned subjects for the tutor
-    $subjects = $wpdb->get_col(
-        $wpdb->prepare(
-            "SELECT DISTINCT c.subject FROM {$wpdb->prefix}gtp_classrooms c
-             JOIN {$wpdb->prefix}gtp_class_assignments a ON c.id = a.classroom_id
-             WHERE a.tutor_id = %d ORDER BY c.subject ASC",
-            $tutor_id
-        )
-    );
+    // Get assigned classrooms for the tutor
+    $classrooms = $wpdb->get_results($wpdb->prepare(
+        "SELECT c.id, c.subject, c.school, c.teacher_first_name, c.teacher_last_name FROM {$wpdb->prefix}gtp_classrooms c
+         JOIN {$wpdb->prefix}gtp_class_assignments a ON c.id = a.classroom_id
+         WHERE a.tutor_id = %d ORDER BY c.subject ASC",
+        $tutor_id
+    ));
 
     ob_start();
     ?>
@@ -118,17 +116,12 @@ function gtp_log_session_shortcode() {
 
         <p><a href="<?php echo esc_url(site_url('/index.php/ta-dashboard/')); ?>" class="button">← Back to Dashboard</a></p>
 
-        <label>Select Subject:</label><br>
-        <select id="gtp-subject-select" name="subject" required style="width:100%; padding:8px; margin-bottom:10px; box-sizing: border-box;">
-            <option value="">-- Select a Subject --</option>
-            <?php foreach ($subjects as $subject): ?>
-                <option value="<?php echo esc_attr($subject); ?>"><?php echo esc_html($subject); ?></option>
-            <?php endforeach; ?>
-        </select>
-
         <label>Select Class:</label><br>
-        <select name="classroom_id" id="gtp-classroom-select" required style="width:100%; padding:8px; margin-bottom:10px; box-sizing: border-box;" disabled>
-            <option value="">-- Select a subject first --</option>
+        <select name="classroom_id" id="gtp-classroom-select" required style="width:100%; padding:8px; margin-bottom:10px; box-sizing: border-box;">
+            <option value="">-- Select a Class --</option>
+            <?php foreach ($classrooms as $classroom): ?>
+                <option value="<?php echo esc_attr($classroom->id); ?>"><?php echo esc_html($classroom->subject . ', ' . $classroom->school . ' - ' . $classroom->teacher_first_name . ' ' . $classroom->teacher_last_name); ?></option>
+            <?php endforeach; ?>
         </select>
 
         <label>Date:</label><br>
@@ -218,7 +211,7 @@ function gtp_log_substitute_session_shortcode() {
     ob_start();
     ?>
     <form method="post" style="max-width:600px; margin:20px auto; padding:20px; background:#f9f9f9; border-radius:8px;">
-        <h2>Log a Substitute Session</h2>
+
 
         <p><a href="<?php echo esc_url(site_url('/index.php/ta-dashboard/')); ?>" class="button">← Back to Dashboard</a></p>
 

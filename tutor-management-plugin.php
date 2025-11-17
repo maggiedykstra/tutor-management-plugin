@@ -86,7 +86,7 @@ add_action('wp_enqueue_scripts', 'gtp_enqueue_log_session_scripts');
 
 function gtp_enqueue_classroom_filter_scripts() {
     global $post;
-    if (is_a($post, 'WP_Post') && (has_shortcode($post->post_content, 'gtp_log_session') || has_shortcode($post->post_content, 'gtp_log_substitute_session'))) {
+    if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'gtp_log_substitute_session')) {
         wp_enqueue_script(
             'gtp-classroom-filter',
             plugin_dir_url(__FILE__) . 'assets/js/classroom-filter.js',
