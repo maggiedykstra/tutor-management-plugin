@@ -5,7 +5,7 @@ Description: A custom plugin for managing tutors and students.
 Version: 1.0
 Author: Maggie Dykstra
 */
-define('GTP_DB_VERSION', '1.8'); // Increment this when schema changes
+define('GTP_DB_VERSION', '1.9'); // Increment this when schema changes
 
 
 add_action('init', 'gtp_start_session', 1);

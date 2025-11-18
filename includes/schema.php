@@ -58,6 +58,8 @@ function gtp_create_classrooms_table() {
         subject varchar(255) NOT NULL,
         teacher_first_name varchar(255) NOT NULL,
         teacher_last_name varchar(255) NOT NULL,
+        teacher_email varchar(255) DEFAULT NULL,
+        teacher_phone varchar(255) DEFAULT NULL,
         time_slot varchar(255) DEFAULT NULL,
         roster text,
         PRIMARY KEY  (id)
@@ -86,7 +88,7 @@ function gtp_create_class_assignments_table() {
 function gtp_create_students_table() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'gtp_students';
-    $charset_collate = $wp_db->get_charset_collate();
+    $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE $table_name (
         id mediumint(9) NOT NULL AUTO_INCREMENT,

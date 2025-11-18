@@ -61,6 +61,8 @@ function gtp_add_classroom_shortcode() {
         $subject = sanitize_text_field($_POST['subject']);
         $teacher_first_name = sanitize_text_field($_POST['teacher_first_name']);
         $teacher_last_name = sanitize_text_field($_POST['teacher_last_name']);
+        $teacher_email = sanitize_email($_POST['teacher_email']);
+        $teacher_phone = sanitize_text_field($_POST['teacher_phone']);
         $time_slot = sanitize_text_field($_POST['time_slot']);
         $roster = sanitize_textarea_field($_POST['roster']);
 
@@ -77,6 +79,8 @@ function gtp_add_classroom_shortcode() {
                     'subject'      => $subject,
                     'teacher_first_name' => $teacher_first_name,
                     'teacher_last_name' => $teacher_last_name,
+                    'teacher_email' => $teacher_email,
+                    'teacher_phone' => $teacher_phone,
                     'time_slot'    => $time_slot,
                 ]
             );
@@ -114,7 +118,7 @@ function gtp_add_classroom_shortcode() {
     ob_start();
     ?>
     <div style="max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
-    <a href="<?php echo esc_url(site_url('/index.php/admin-dashboard/')); ?>" class="button">Go Back to Admin Dashboard</a>
+    <a href="<?php echo esc_url(site_url('/index.php/admin-dashboard/')); ?>" class="button">← Go Back to Admin Dashboard</a>
         <?php echo $message; ?>
         <form method="post">
             <label>School:</label>
@@ -156,6 +160,13 @@ function gtp_add_classroom_shortcode() {
             
             <label>Teacher Last Name:</label>
             <input type="text" name="teacher_last_name" required style="width:100%; padding:8px; margin-bottom:10px;">
+
+            <label>Teacher Email:</label>
+            <input type="email" name="teacher_email" style="width:100%; padding:8px; margin-bottom:10px;">
+
+            <label>Teacher Phone:</label>
+            <input type="tel" name="teacher_phone" style="width:100%; padding:8px; margin-bottom:10px;">
+            
             
             <label>Time Slot:</label>
             <input type="text" name="time_slot" style="width:100%; padding:8px; margin-bottom:10px;">

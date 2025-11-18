@@ -68,9 +68,13 @@ function gtp_registration_shortcode() {
         $password    = $_POST['password'];
         $confirm     = $_POST['confirm_password'];
 
-        // Handle subjects as array
-        $subjects_array = isset($_POST['subjects']) ? array_map('sanitize_text_field', $_POST['subjects']) : [];
-        $subjects = implode(', ', $subjects_array); // Save as comma-separated string
+        $subject_preferences = [];
+        if (isset($_POST['subject_preferences'])) {
+            foreach ($_POST['subject_preferences'] as $subject => $preference) {
+                $subject_preferences[sanitize_text_field($subject)] = sanitize_text_field($preference);
+            }
+        }
+        $subject_preferences_json = json_encode($subject_preferences);
 
         // Basic validation
         if ($password !== $confirm) {
@@ -89,7 +93,7 @@ function gtp_registration_shortcode() {
                 'college'    => $college,
                 'username'   => $username,
                 'password'   => $hashed_password,
-                'subjects'   => $subjects,
+                'subject_preferences'   => $subject_preferences_json,
                 'role'       => 'tutor',
                 // 'verified'   => 0 NEED TO ADD THIS FIELD TO DB
             ]);
@@ -99,8 +103,17 @@ function gtp_registration_shortcode() {
         }
     }
 
+    $all_subjects = ['AP Computer Science Principles', 'AP Biology', 'AP Statistics', 'AP Physics 1'];
+    $preference_levels = [
+        'cannot_tutor' => 'Cannot Tutor',
+        'willing_to_tutor' => 'Willing to Tutor',
+        'excited_to_tutor' => 'Would be Excited to Tutor'
+    ];
+
     ob_start(); ?>
     <form method="post" style="max-width:600px; margin:30px auto; padding:20px; background:#f9f9f9; border-radius:8px;">
+        <p><a href="<?php echo esc_url('/tutor-site/index.php/welcome-to-gtp/'); ?>" class="button">← Back to Login</a></p>
+
 
         <label>First Name:</label><br>
         <input type="text" name="first_name" required style="width:60%; height:25px; padding:8px;"><br><br>
@@ -123,13 +136,30 @@ function gtp_registration_shortcode() {
         <label>Confirm Password:</label><br>
         <input type="password" name="confirm_password" required style="width:60%; height:25px; padding:8px;"><br><br>
 
-        <label>Subjects you're comfortable tutoring:</label><br>
-        <div style="width:60%; margin-left:0; margin-top:15px; text-align:left;">
-            <label><input type="checkbox" name="subjects[]" value="AP Computer Science Principles"> AP Computer Science Principles</label><br>
-            <label><input type="checkbox" name="subjects[]" value="AP Statistics"> AP Statistics</label><br>
-            <label><input type="checkbox" name="subjects[]" value="AP Biology"> AP Biology</label><br>
-            <label><input type="checkbox" name="subjects[]" value="AP Physics 1"> AP Physics 1</label>
-        </div><br>
+        <h3>Subject Preferences:</h3>
+        <table class="form-table" border="1" style="width:100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="border: 1px solid #ccc; padding: 8px;">Subject</th>
+                    <?php foreach ($preference_levels as $level_key => $level_label) : ?>
+                        <th style="text-align:center; border: 1px solid #ccc; padding: 8px;"><?php echo esc_html($level_label); ?></th>
+                    <?php endforeach; ?>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($all_subjects as $subject) : ?>
+                    <tr>
+                        <th style="border: 1px solid #ccc; padding: 8px;"><?php echo esc_html($subject); ?></th>
+                        <?php foreach ($preference_levels as $level_key => $level_label) : ?>
+                            <td style="text-align:center; border: 1px solid #ccc; padding: 8px;">
+                                <input type="radio" name="subject_preferences[<?php echo esc_attr($subject); ?>]" value="<?php echo esc_attr($level_key); ?>" <?php checked('cannot_tutor', $level_key); ?>>
+                            </td>
+                        <?php endforeach; ?>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <br>
 
         <input type="submit" name="gtp_register_submit" value="Submit" style="padding:10px 20px; background:#0073aa; color:white; border:none; cursor:pointer;">
     </form>

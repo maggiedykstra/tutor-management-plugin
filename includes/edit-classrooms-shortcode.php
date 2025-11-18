@@ -18,6 +18,8 @@ function gtp_edit_classrooms_shortcode() {
         $subject = sanitize_text_field($_POST['subject']);
         $teacher_first_name = sanitize_text_field($_POST['teacher_first_name']);
         $teacher_last_name = sanitize_text_field($_POST['teacher_last_name']);
+        $teacher_email = sanitize_email($_POST['teacher_email']);
+        $teacher_phone = sanitize_text_field($_POST['teacher_phone']);
         $time_slot = sanitize_text_field($_POST['time_slot']);
         $tutor_id = intval($_POST['tutor_id']);
 
@@ -29,6 +31,8 @@ function gtp_edit_classrooms_shortcode() {
                 'subject' => $subject,
                 'teacher_first_name' => $teacher_first_name,
                 'teacher_last_name' => $teacher_last_name,
+                'teacher_email' => $teacher_email,
+                'teacher_phone' => $teacher_phone,
                 'time_slot' => $time_slot,
             ],
             ['id' => $classroom_id]
@@ -97,6 +101,14 @@ function gtp_edit_classrooms_shortcode() {
                 <div>
                     <label>Teacher Last Name:</label>
                     <input type="text" name="teacher_last_name" value="<?php echo esc_attr($classroom->teacher_last_name); ?>" required style="width:100%; padding:8px; margin-bottom:10px;">
+                </div>
+                <div>
+                    <label>Teacher Email:</label>
+                    <input type="email" name="teacher_email" value="<?php echo esc_attr($classroom->teacher_email); ?>" style="width:100%; padding:8px; margin-bottom:10px;">
+                </div>
+                <div>
+                    <label>Teacher Phone:</label>
+                    <input type="tel" name="teacher_phone" value="<?php echo esc_attr($classroom->teacher_phone); ?>" style="width:100%; padding:8px; margin-bottom:10px;">
                 </div>
                 <div style="grid-column: 1 / -1;">
                     <label>Assign to TA:</label>

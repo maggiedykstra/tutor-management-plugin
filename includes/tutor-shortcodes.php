@@ -256,7 +256,8 @@ function gtp_log_substitute_session_shortcode() {
 }
 add_shortcode('gtp_log_substitute_session', 'gtp_log_substitute_session_shortcode');
 
-function gtp_ta_profile_shortcode() {
+function gtp_ta_profile_shortcode()
+{
     global $wpdb;
     $tutor_id = $_SESSION['gtp_user']['id'];
     $table_name = $wpdb->prefix . 'gtp_users';
@@ -288,7 +289,13 @@ function gtp_ta_profile_shortcode() {
         $update_data['bio'] = sanitize_textarea_field($_POST['bio']);
         $update_data['first_name'] = sanitize_text_field($_POST['first_name']);
         $update_data['last_name'] = sanitize_text_field($_POST['last_name']);
-        $subject_preferences = isset($_POST['subject_preferences']) ? array_map('sanitize_text_field', $_POST['subject_preferences']) : [];
+        
+        $subject_preferences = [];
+        if (isset($_POST['subject_preferences'])) {
+            foreach ($_POST['subject_preferences'] as $subject => $preference) {
+                $subject_preferences[sanitize_text_field($subject)] = sanitize_text_field($preference);
+            }
+        }
         $update_data['subject_preferences'] = json_encode($subject_preferences);
 
         if (!empty($update_data)) {
@@ -301,11 +308,13 @@ function gtp_ta_profile_shortcode() {
             if ($wpdb->last_error) {
                 echo '<p style="color:red;">DB Error: ' . esc_html($wpdb->last_error) . '</p>';
             } else {
+                $_SESSION['gtp_user']['first_name'] = $update_data['first_name'];
+                $_SESSION['gtp_user']['last_name'] = $update_data['last_name'];
                 $_SESSION['gtp_profile_updated'] = true;
                 wp_redirect(site_url('/index.php/ta-profile/'));
                 exit;
             }
-        } 
+        }
     }
 
     // Fetch tutor data
@@ -313,12 +322,16 @@ function gtp_ta_profile_shortcode() {
 
     $first_name = $tutor->first_name;
     $last_name = $tutor->last_name;
-    $school = $tutor->school;
     $bio = $tutor->bio;
     $headshot_url = $tutor->headshot_url;
     $subject_preferences = json_decode($tutor->subject_preferences, true) ?: [];
 
     $all_subjects = ['AP Computer Science Principles', 'AP Biology', 'AP Statistics', 'AP Physics 1'];
+    $preference_levels = [
+        'cannot_tutor' => 'Cannot Tutor',
+        'willing_to_tutor' => 'Willing to Tutor',
+        'excited_to_tutor' => 'Would be Excited to Tutor'
+    ];
 
     ob_start();
     ?>
@@ -328,7 +341,7 @@ function gtp_ta_profile_shortcode() {
         <form method="post" enctype="multipart/form-data">
             <?php wp_nonce_field('gtp_update_profile', 'gtp_profile_nonce'); ?>
 
-            <?php if ($headshot_url): ?>
+            <?php if ($headshot_url) : ?>
                 <img src="<?php echo esc_url($headshot_url); ?>" alt="Your headshot" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 10px;">
             <?php endif; ?>
 
@@ -353,16 +366,32 @@ function gtp_ta_profile_shortcode() {
             </p>
 
             <h3>Subject Preferences:</h3>
-            <div style="margin-bottom: 20px;">
-                <?php foreach ($all_subjects as $subject): ?>
-                    <div>
-                        <input type="checkbox" name="subject_preferences[]" value="<?php echo esc_attr($subject); ?>" <?php checked(in_array($subject, $subject_preferences)); ?>>
-                        <?php echo esc_html($subject); ?>
-                    </div>
-                <?php endforeach; ?>
-            </div>
+            <table class="form-table" border="1" style="width:100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid #ccc; padding: 8px;">Subject</th>
+                        <?php foreach ($preference_levels as $level_key => $level_label) : ?>
+                            <th style="text-align:center; border: 1px solid #ccc; padding: 8px;"><?php echo esc_html($level_label); ?></th>
+                        <?php endforeach; ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($all_subjects as $subject) :
+                        $current_preference = isset($subject_preferences[$subject]) ? $subject_preferences[$subject] : 'cannot_tutor';
+                    ?>
+                        <tr>
+                            <th style="border: 1px solid #ccc; padding: 8px;"><?php echo esc_html($subject); ?></th>
+                            <?php foreach ($preference_levels as $level_key => $level_label) : ?>
+                                <td style="text-align:center; border: 1px solid #ccc; padding: 8px;">
+                                    <input type="radio" name="subject_preferences[<?php echo esc_attr($subject); ?>]" value="<?php echo esc_attr($level_key); ?>" <?php checked($current_preference, $level_key); ?>>
+                                </td>
+                            <?php endforeach; ?>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
 
-            <input type="submit" name="gtp_update_profile" value="Save Profile" class="button button-primary">
+            <input type="submit" name="gtp_update_profile" value="Save Profile" class="button button-primary" style="margin-top:20px;">
         </form>
     </div>
     <?php
