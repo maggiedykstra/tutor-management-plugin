@@ -13,7 +13,12 @@ function gtp_session_filter_shortcode() {
             $end_date = sanitize_text_field($_GET['end_date']);
             if (!empty($start_date) && !empty($end_date)) {
                 $results = $wpdb->get_results($wpdb->prepare(
-                    "SELECT first_name, last_name, COUNT(*) as session_count FROM $sessions_table WHERE session_date BETWEEN %s AND %s GROUP BY tutor_username ORDER BY last_name, first_name",
+                    "SELECT u.first_name, u.last_name, COUNT(*) as session_count 
+                     FROM $sessions_table s
+                     JOIN {$wpdb->prefix}gtp_users u ON s.tutor_username = u.username
+                     WHERE s.session_date BETWEEN %s AND %s 
+                     GROUP BY s.tutor_username 
+                     ORDER BY u.last_name, u.first_name",
                     $start_date, $end_date
                 ), ARRAY_A);
             }
@@ -60,9 +65,22 @@ function gtp_session_filter_shortcode() {
         $output = fopen('php://output', 'w');
 
         if (!empty($results)) {
-            fputcsv($output, array_keys($results[0])); // Add header row
-            foreach ($results as $row) {
-                fputcsv($output, $row);
+            if ($report_type === 'payroll') {
+                $headers = ['Tutor Name', 'Session Count', 'Invoice Date'];
+                fputcsv($output, $headers);
+                $invoice_date = date('Y-m-d'); // Current date
+                foreach ($results as $row) {
+                    fputcsv($output, [
+                        $row['first_name'] . ' ' . $row['last_name'],
+                        $row['session_count'],
+                        $invoice_date
+                    ]);
+                }
+            } else { // Session Log
+                fputcsv($output, array_keys($results[0])); // Add header row
+                foreach ($results as $row) {
+                    fputcsv($output, $row);
+                }
             }
         }
         fclose($output);
@@ -199,7 +217,12 @@ function gtp_session_filter_shortcode() {
                     $end_date = sanitize_text_field($_GET['end_date']);
                     if (!empty($start_date) && !empty($end_date)) {
                         $results = $wpdb->get_results($wpdb->prepare(
-                            "SELECT tutor_username, first_name, last_name, COUNT(*) as session_count FROM $sessions_table WHERE session_date BETWEEN %s AND %s GROUP BY tutor_username ORDER BY last_name, first_name",
+                            "SELECT u.first_name, u.last_name, COUNT(*) as session_count 
+                             FROM $sessions_table s
+                             JOIN {$wpdb->prefix}gtp_users u ON s.tutor_username = u.username
+                             WHERE s.session_date BETWEEN %s AND %s 
+                             GROUP BY s.tutor_username 
+                             ORDER BY u.last_name, u.first_name",
                             $start_date, $end_date
                         ));
                         echo '<table class="wp-list-table widefat fixed striped posts spreadsheet-style">';

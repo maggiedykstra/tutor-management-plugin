@@ -62,6 +62,7 @@ function gtp_create_classrooms_table() {
         teacher_phone varchar(255) DEFAULT NULL,
         time_slot varchar(255) DEFAULT NULL,
         roster text,
+        zoom_link varchar(255) DEFAULT NULL,
         PRIMARY KEY  (id)
     ) $charset_collate;";
 

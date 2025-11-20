@@ -5,7 +5,7 @@ Description: A custom plugin for managing tutors and students.
 Version: 1.0
 Author: Maggie Dykstra
 */
-define('GTP_DB_VERSION', '1.9'); // Increment this when schema changes
+define('GTP_DB_VERSION', '2.0'); // Increment this when schema changes
 
 
 add_action('init', 'gtp_start_session', 1);
@@ -64,6 +64,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/ajax-handlers.php';
 require_once plugin_dir_path(__FILE__) . 'includes/session-filter-shortcode.php';
 require_once plugin_dir_path(__FILE__) . 'includes/edit-classrooms-shortcode.php';
 require_once plugin_dir_path(__FILE__) . 'includes/my-logged-sessions-shortcode.php';
+require_once plugin_dir_path(__FILE__) . 'includes/my-classes-shortcode.php';
 
 function gtp_enqueue_log_session_scripts() {
     global $post;

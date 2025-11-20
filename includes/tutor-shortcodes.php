@@ -45,6 +45,12 @@ function gtp_TA_dashboard_shortcode() {
                 </button>
         </form>
 
+        <form action="<?php echo esc_url(site_url('/index.php/my-classes/')); ?>" method="get">
+                <button type="submit" style="padding:10px 20px; background:#0073aa; color:white; border:none; border-radius:5px; cursor:pointer;">
+                    My Classes
+                </button>
+        </form>
+
     </div>
     <?php
     return ob_get_clean();
