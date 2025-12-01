@@ -22,6 +22,8 @@ function gtp_create_required_pages() {
         'edit-classrooms'       => '<!-- wp:shortcode -->[gtp_edit_classrooms]<!-- /wp:shortcode -->',
         'my-logged-sessions'    => '<!-- wp:shortcode -->[gtp_my_logged_sessions]<!-- /wp:shortcode -->',
         'my-classes'            => '<!-- wp:shortcode -->[gtp_my_classes]<!-- /wp:shortcode -->',
+        'validate-tas'            => '<!-- wp:shortcode -->[gtp_validate_tas]<!-- /wp:shortcode -->',
+        'add-user'            => '<!-- wp:shortcode -->[gtp_add_user]<!-- /wp:shortcode -->'
     ];
 
     foreach ($pages as $slug => $content) {

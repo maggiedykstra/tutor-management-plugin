@@ -17,6 +17,7 @@ function gtp_TA_dashboard_shortcode() {
         }
         ?>
         <h2>Welcome, <?php echo $name; ?>!</h2>
+        <!--<a href="<//?php echo esc_url( wp_logout_url( home_url( 'welcome-to-gtp/' ) ) ); ?>" class="button">Logout</a>-->
 
         <div style="margin-top:20px; display: flex; gap: 15px;">
             <form action="<?php echo esc_url(site_url('/index.php/TA-profile')); ?>" method="get">

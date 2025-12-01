@@ -14,7 +14,7 @@ function gtp_admin_dashboard_shortcode() {
         <h2>Welcome, <?php echo $name; ?>!</h2>
 
         <div style="margin-top:20px; display: flex; gap: 15px;">
-            <form action="<?php echo esc_url(site_url('/index.php/new-ta-registration')); ?>" method="get">
+            <form action="<?php echo esc_url(site_url('/index.php/validate-tas')); ?>" method="get">
                 <button type="submit" style="padding:10px 20px; background:#0073aa; color:white; border:none; border-radius:5px; cursor:pointer;">
                     Validate TAs
                 </button>
@@ -33,6 +33,11 @@ function gtp_admin_dashboard_shortcode() {
             <form action="<?php echo esc_url(site_url('/index.php/edit-classrooms')); ?>" method="get">
                 <button type="submit" style="padding:10px 20px; background:#0073aa; color:white; border:none; border-radius:5px; cursor:pointer;">
                     Edit Classrooms
+                </button>
+            </form>
+            <form action="<?php echo esc_url(site_url('/index.php/add-user')); ?>" method="get">
+                <button type="submit" style="padding:10px 20px; background:#0073aa; color:white; border:none; border-radius:5px; cursor:pointer;">
+                    Add User
                 </button>
             </form>
         </div>
@@ -196,10 +201,12 @@ function gtp_validate_shortcode() {
     // Handle validation/denial
     if (isset($_POST['gtp_validate_user'])) {
         $user_id = intval($_POST['user_id']);
-        if (isset($_POST['approve'])) {
-            $wpdb->update($table_name, ['role' => 'tutor'], ['id' => $user_id]);
+        $action = $_POST['gtp_validate_user'];
+    
+        if ($action === 'approve') {
+            $wpdb->update($table_name, ['role' => 'tutor', 'validated' => 1], ['id' => $user_id]);
             $message = '<p style="color:green;">User approved as a Tutor.</p>';
-        } elseif (isset($_POST['deny'])) {
+        } elseif ($action === 'deny') {
             $wpdb->delete($table_name, ['id' => $user_id]);
             $message = '<p style="color:orange;">User denied and deleted.</p>';
         }
@@ -212,7 +219,7 @@ function gtp_validate_shortcode() {
 
     ob_start();
     ?>
-    <button onclick="history.back()">Go Back</button>
+    <a href="<?php echo site_url('index.php/admin-dashboard/'); ?>" class="button">Admin Home</a>
     <div style="max-width:800px; margin:30px auto; padding:20px; background:#f1f1f1; border-radius:10px;">
         <h2>Validate or Register a New TA</h2>
         <?php echo $message; ?>
@@ -237,11 +244,11 @@ function gtp_validate_shortcode() {
                             <td><?php echo esc_html($user->email); ?></td>
                             <td><?php echo esc_html($user->role); ?></td>
                             <td>
-                                <form method="post" style="display:inline;">
-                                    <input type="hidden" name="user_id" value="<?php echo $user->id; ?>">
-                                    <button type="submit" name="approve" class="button button-primary">Approve</button>
-                                    <button type="submit" name="deny" class="button button-secondary">Deny</button>
-                                </form>
+                            <form method="post" style="display:inline;">
+                                <input type="hidden" name="user_id" value="<?php echo $user->id; ?>">
+                                <button type="submit" name="gtp_validate_user" value="approve" class="button button-primary">Approve</button>
+                                <button type="submit" name="gtp_validate_user" value="deny" class="button button-secondary">Deny</button>
+                            </form>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -254,4 +261,83 @@ function gtp_validate_shortcode() {
     <?php
     return ob_get_clean();
 }
-add_shortcode('gtp_add_ta', 'gtp_validate_shortcode');
+add_shortcode('gtp_validate_tas', 'gtp_validate_shortcode');
+
+function gtp_add_user_shortcode() {
+    // Restrict access to admin users
+    if (!isset($_SESSION['gtp_user']) || $_SESSION['gtp_user']['role'] !== 'admin') {
+        return '<p>You do not have access to this page.</p>';
+    }
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'gtp_users';
+    $message = '';
+
+    // Handle form submission
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['gtp_add_user_submit'])) {
+        $first_name = sanitize_text_field($_POST['first_name']);
+        $last_name = sanitize_text_field($_POST['last_name']);
+        $username = sanitize_user($_POST['username']);
+        $email = sanitize_email($_POST['email']);
+        $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        $role = sanitize_text_field($_POST['role']);
+
+        // Check if username already exists
+        $existing = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $table_name WHERE username = %s", $username));
+
+        if ($existing > 0) {
+            $message = '<p style="color:red;">Username already exists.</p>';
+        } else {
+            $wpdb->insert($table_name, [
+                'first_name' => $first_name,
+                'last_name' => $last_name,
+                'username' => $username,
+                'email' => $email,
+                'password' => $password,
+                'role' => $role,
+                'validated' => 1
+            ]);
+
+            if ($wpdb->insert_id) {
+                $message = '<p style="color:green;">User added and validated successfully!</p>';
+            } else {
+                $message = '<p style="color:red;">Error adding user.</p>';
+            }
+        }
+    }
+
+    ob_start();
+    ?>
+    <div style="max-width:600px; margin:30px auto; padding:20px; background:#f9f9f9; border-radius:10px;">
+    <a href="<?php echo esc_url(site_url('/index.php/admin-dashboard/')); ?>" class="button">← Go Back to Admin Dashboard</a>
+        <h2>Add and Validate a New User</h2>
+        <?php echo $message; ?>
+        <form method="post">
+            <label>First Name:</label><br>
+            <input type="text" name="first_name" required><br><br>
+
+            <label>Last Name:</label><br>
+            <input type="text" name="last_name" required><br><br>
+
+            <label>Username:</label><br>
+            <input type="text" name="username" required><br><br>
+
+            <label>Email:</label><br>
+            <input type="email" name="email" required><br><br>
+
+            <label>Password:</label><br>
+            <input type="password" name="password" required><br><br>
+
+            <label>Role:</label><br>
+            <select name="role" required>
+                <option value="tutor">Tutor</option>
+                <option value="admin">Admin</option>
+            </select><br><br>
+
+            <button type="submit" name="gtp_add_user_submit" class="button button-primary">Add User</button>
+        </form>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('gtp_add_user', 'gtp_add_user_shortcode');

@@ -5,7 +5,7 @@ Description: A custom plugin for managing tutors and students.
 Version: 1.0
 Author: Maggie Dykstra
 */
-define('GTP_DB_VERSION', '2.0'); // Increment this when schema changes
+define('GTP_DB_VERSION', '3.0'); // Increment this when schema changes
 
 
 add_action('init', 'gtp_start_session', 1);
@@ -22,7 +22,7 @@ function gtp_activate_plugin() {
   flush_rewrite_rules();              // rebuild WordPress routing
 }
 
-function gtp_update_db_schema() {
+/* function gtp_update_db_schema() {
     $installed_ver = get_option('gtp_db_version');
     if ($installed_ver != GTP_DB_VERSION) {
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -34,6 +34,7 @@ function gtp_update_db_schema() {
         update_option('gtp_db_version', GTP_DB_VERSION);
     }
 }
+    */
 
 add_action('plugins_loaded', 'gtp_update_db_schema');
 
@@ -65,6 +66,23 @@ require_once plugin_dir_path(__FILE__) . 'includes/session-filter-shortcode.php'
 require_once plugin_dir_path(__FILE__) . 'includes/edit-classrooms-shortcode.php';
 require_once plugin_dir_path(__FILE__) . 'includes/my-logged-sessions-shortcode.php';
 require_once plugin_dir_path(__FILE__) . 'includes/my-classes-shortcode.php';
+require_once plugin_dir_path(__FILE__) . 'includes/schema.php';
+require_once plugin_dir_path(__FILE__) . 'includes/db-migrations.php';
+require_once plugin_dir_path(__FILE__) . 'includes/database-updater.php';
+
+
+function gtp_add_admin_menu() {
+    add_menu_page(
+        'GTP Database Updater',
+        'GTP DB Updater',
+        'manage_options',
+        'gtp-database-updater',
+        'gtp_database_updater_page',
+        'dashicons-database',
+        90
+    );
+}
+add_action('admin_menu', 'gtp_add_admin_menu');
 
 function gtp_enqueue_log_session_scripts() {
     global $post;

@@ -2,7 +2,7 @@
 //=== GTP Dev Seeder: Only for Maria and Maggie ===
 add_action('admin_menu', function () {
     $current_user = wp_get_current_user();
-    if (in_array($current_user->user_login, ['gtpplugin', 'globalteachingproject_mdmd'])) {
+    if (in_array($current_user->user_login, ['gtpplugin', 'globalteachingproject_mdmd', 'mdolan047'])) {
         add_submenu_page(
             'tutor-dashboard',
             'Dev Seeder',
@@ -36,9 +36,9 @@ function gtp_insert_sample_users() {
     $table = $wpdb->prefix . 'gtp_users';
 
     $samples = [
-        ['username' => 'sampleadmin', 'password' => 'admin123', 'role' => 'admin', 'first_name' => 'SampleA1'],
+        ['username' => 'sampleadmin', 'password' => 'admin123', 'role' => 'admin', 'first_name' => 'SampleA1', 'last_name' => 'last', 'email' => 'gmail'],
         ['username' => 'sampletutor1', 'password' => 'tutor123', 'role' => 'tutor', 'first_name' => 'SampleT1', 'last_name' => 'last', 'email' => 'gmail'],
-        ['username' => 'sampletutor2', 'password' => 'tutor456', 'role' => 'tutor', 'first_name' => 'SampleT2'],
+        ['username' => 'sampletutor2', 'password' => 'tutor456', 'role' => 'tutor', 'first_name' => 'SampleT2', 'last_name' => 'last', 'email' => 'gmail'],
     ];
 
     foreach ($samples as $user) {
@@ -148,10 +148,33 @@ function gtp_migrate_classroom_table_once() {
         update_option('gtp_classroom_migration_done', true);
     }
 }
+function gtp_migrate_users_table_once() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'gtp_users';
+
+    // Check if the email column exists
+    $email_column = $wpdb->get_var("SHOW COLUMNS FROM $table LIKE 'email'");
+
+    if (!$email_column) {
+        // Add the email column
+        $wpdb->query("ALTER TABLE $table ADD email varchar(255) DEFAULT NULL AFTER username");
+
+        // Mark migration as complete
+        update_option('gtp_users_migration_done', true);
+    }
+}
+
 
 add_action('init', function () {
     if (!get_option('gtp_classroom_migration_done')) {
         gtp_migrate_classroom_table_once();
     }
 });
+
+add_action('init', function () {
+    if (!get_option('gtp_users_migration_done')) {
+        gtp_migrate_users_table_once();
+    }
+});
+
 

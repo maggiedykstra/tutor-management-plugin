@@ -21,9 +21,13 @@ function gtp_login_shortcode() {
             if ($user->role === 'admin') {
                 wp_redirect(site_url('/index.php/admin-dashboard'));
                 exit;
-            } elseif ($user->role === 'tutor') {
-                wp_redirect(site_url('/index.php/TA-dashboard'));
-                exit;
+            } elseif ($user->role === 'tutor' || $user->role ==='pending') {
+                if ($user->validated) {
+                    wp_redirect(site_url('/index.php/TA-dashboard'));
+                    exit;
+                } else {
+                    echo '<p style="color:red;">Your account is pending approval. Please wait for an administrator to validate your account.</p>';
+                }
             }
         } else {
             echo '<p style="color:red;">Login failed. Please check your credentials or register through the sign up button.</p>';
@@ -63,7 +67,7 @@ function gtp_registration_shortcode() {
         $first_name  = sanitize_text_field($_POST['first_name']);
         $last_name   = sanitize_text_field($_POST['last_name']);
         $email       = sanitize_email($_POST['email']);
-        $college     = sanitize_text_field($_POST['college']);
+        $college     = sanitize_text_field($_POST['chollege']);
         $username    = sanitize_user($_POST['username']);
         $password    = $_POST['password'];
         $confirm     = $_POST['confirm_password'];
@@ -90,13 +94,14 @@ function gtp_registration_shortcode() {
                 'first_name' => $first_name,
                 'last_name'  => $last_name,
                 'email'      => $email,
-                'college'    => $college,
+                'school'    => $college,
                 'username'   => $username,
                 'password'   => $hashed_password,
                 'subject_preferences'   => $subject_preferences_json,
-                'role'       => 'tutor',
-                // 'verified'   => 0 NEED TO ADD THIS FIELD TO DB
+                'role'       => 'pending',
+                'validated'   => 0
             ]);
+            
 
             wp_redirect(site_url('/index.php/registration-confirmation'));
             exit;
