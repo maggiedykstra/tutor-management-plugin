@@ -352,12 +352,12 @@ function gtp_ta_profile_shortcode()
                 <img src="<?php echo esc_url($headshot_url); ?>" alt="Your headshot" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 10px;">
             <?php endif; ?>
 
-            <h3>First Name:</h3>
+            <h3>First Name (must be the same as BILL.com) :</h3>
             <p>
                 <input type="text" id="first_name" name="first_name" value="<?php echo esc_attr($first_name); ?>" style="width:100%; padding:8px; box-sizing: border-box;">
             </p>
 
-            <h3>Last Name:</h3>
+            <h3>Last Name (must be the same as BILL.com) :</h3>
             <p>
                 <input type="text" id="last_name" name="last_name" value="<?php echo esc_attr($last_name); ?>" style="width:100%; padding:8px; box-sizing: border-box;">
             </p>

@@ -173,5 +173,43 @@ function gtp_registration_shortcode() {
 }
 add_shortcode('gtp_registration_page', 'gtp_registration_shortcode');
 
+function gtp_validate_admin_user( $user_id ) {
+    $user = get_userdata( $user_id );
+    if ( in_array( 'administrator', (array) $user->roles ) ) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'gtp_users';
+        
+        $user_login = $user->user_login;
+        $user_email = $user->user_email;
+
+        // Check if the user already exists in the gtp_users table
+        $existing_user = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE username = %s", $user_login ) );
+
+        if ( $existing_user ) {
+            // If user exists, update the validated status
+            $wpdb->update(
+                $table_name,
+                array( 'validated' => 1 ),
+                array( 'username' => $user_login )
+            );
+        } else {
+            // If user does not exist, insert a new record
+            $wpdb->insert(
+                $table_name,
+                array(
+                    'username' => $user_login,
+                    'email' => $user_email,
+                    'role' => 'admin',
+                    'validated' => 1,
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
+                    'password' => $user->user_pass,
+                )
+            );
+        }
+    }
+}
+add_action( 'user_register', 'gtp_validate_admin_user');
+
 
 
