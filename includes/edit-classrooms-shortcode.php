@@ -20,7 +20,9 @@ function gtp_edit_classrooms_shortcode() {
         $teacher_last_name = sanitize_text_field($_POST['teacher_last_name']);
         $teacher_email = sanitize_email($_POST['teacher_email']);
         $teacher_phone = sanitize_text_field($_POST['teacher_phone']);
-        $time_slot = sanitize_text_field($_POST['time_slot']);
+        $start_time = gtp_sanitize_time($_POST['start_time'] ?? '');
+        $end_time = gtp_sanitize_time($_POST['end_time'] ?? '');
+        $time_slot = gtp_format_time_range($start_time, $end_time);
         $tutor_id = intval($_POST['tutor_id']);
 
         // Update classroom details
@@ -33,10 +35,21 @@ function gtp_edit_classrooms_shortcode() {
                 'teacher_last_name' => $teacher_last_name,
                 'teacher_email' => $teacher_email,
                 'teacher_phone' => $teacher_phone,
+                'start_time' => $start_time,
+                'end_time' => $end_time,
                 'time_slot' => $time_slot,
             ],
             ['id' => $classroom_id]
         );
+
+        $wpdb->query($wpdb->prepare(
+            "UPDATE $classrooms_table
+             SET start_time = NULLIF(%s, ''), end_time = NULLIF(%s, '')
+             WHERE id = %d",
+            $start_time ?: '',
+            $end_time ?: '',
+            $classroom_id
+        ));
 
         // Update TA assignment
         if ($tutor_id) {
@@ -66,7 +79,7 @@ function gtp_edit_classrooms_shortcode() {
             $wpdb->delete($assignments_table, ['classroom_id' => $classroom_id]);
         }
 
-        echo '<p style="color:green;">Classroom updated successfully!</p>';
+        echo '<p class="gtp-msg is-success">Classroom updated successfully!</p>';
     }
 
     // Display edit form if a classroom is selected
@@ -78,8 +91,9 @@ function gtp_edit_classrooms_shortcode() {
 
         ob_start();
         ?>
-        <div style="max-width:600px; margin:20px auto; padding:20px; background:#f9f9f9; border-radius:8px;">
-            <h2>Edit Classroom</h2>
+        <div class="gtp-page">
+            <?php echo gtp_dashboard_back_link('admin'); ?>
+            <h1 class="gtp-page-title">Edit Classroom</h1>
             <form method="post" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <input type="hidden" name="classroom_id" value="<?php echo $classroom->id; ?>">
                 <div style="grid-column: 1 / -1;">
@@ -91,8 +105,12 @@ function gtp_edit_classrooms_shortcode() {
                     <input type="text" name="subject" value="<?php echo esc_attr($classroom->subject); ?>" required style="width:100%; padding:8px; margin-bottom:10px;">
                 </div>
                 <div>
-                    <label>Time Slot:</label>
-                    <input type="text" name="time_slot" value="<?php echo esc_attr($classroom->time_slot); ?>" style="width:100%; padding:8px; margin-bottom:10px;">
+                    <label>Start Time:</label>
+                    <input type="time" name="start_time" step="60" value="<?php echo esc_attr(gtp_time_input_value($classroom->start_time)); ?>" style="width:100%; padding:8px; margin-bottom:10px;">
+                </div>
+                <div>
+                    <label>End Time:</label>
+                    <input type="time" name="end_time" step="60" value="<?php echo esc_attr(gtp_time_input_value($classroom->end_time)); ?>" style="width:100%; padding:8px; margin-bottom:10px;">
                 </div>
                 <div>
                     <label>Teacher First Name:</label>
@@ -119,9 +137,16 @@ function gtp_edit_classrooms_shortcode() {
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div style="grid-column: 1 / -1; display: flex; justify-content: space-between;">
+                <div style="grid-column: 1 / -1; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                     <input type="submit" name="gtp_update_classroom" value="Save Changes" class="button button-primary">
-                    <a href="<?php echo esc_url(site_url('/index.php/edit-classrooms/')); ?>" class="button">← Back to Edit Classrooms</a>
+                    <?php
+                    $back_url = add_query_arg([
+                        'school' => isset($_GET['school']) ? sanitize_text_field($_GET['school']) : '',
+                        'subject' => isset($_GET['subject']) ? sanitize_text_field($_GET['subject']) : '',
+                        'assignment' => isset($_GET['assignment']) ? sanitize_text_field($_GET['assignment']) : '',
+                    ], site_url('/index.php/edit-classrooms/'));
+                    ?>
+                    <a href="<?php echo esc_url($back_url); ?>" class="button">Edit Classrooms</a>
                 </div>
             </form>
         </div>
@@ -130,41 +155,81 @@ function gtp_edit_classrooms_shortcode() {
     }
 
     // Display list of classrooms
-    $schools = $wpdb->get_col("SELECT DISTINCT school FROM $classrooms_table ORDER BY school ASC");
-    $subjects = $wpdb->get_col("SELECT DISTINCT subject FROM $classrooms_table ORDER BY subject ASC");
+    $base_url = site_url('/index.php/edit-classrooms/');
+    $semester_id = gtp_get_working_semester_id();
+    $schools = $wpdb->get_col($wpdb->prepare(
+        "SELECT DISTINCT school FROM $classrooms_table WHERE semester_id = %d ORDER BY school ASC",
+        $semester_id
+    ));
+    $subjects = $wpdb->get_col($wpdb->prepare(
+        "SELECT DISTINCT subject FROM $classrooms_table WHERE semester_id = %d ORDER BY subject ASC",
+        $semester_id
+    ));
 
     $selected_school = isset($_GET['school']) ? sanitize_text_field($_GET['school']) : '';
     $selected_subject = isset($_GET['subject']) ? sanitize_text_field($_GET['subject']) : '';
+    $selected_assignment = isset($_GET['assignment']) ? sanitize_text_field($_GET['assignment']) : '';
+    if (!in_array($selected_assignment, ['', 'assigned', 'unassigned'], true)) {
+        $selected_assignment = '';
+    }
 
-    $sql = "SELECT * FROM $classrooms_table WHERE 1=1";
-    if ($selected_school) {
-        $sql .= $wpdb->prepare(" AND school = %s", $selected_school);
+    $sql = "SELECT c.*,
+                   u.first_name AS tutor_first_name,
+                   u.last_name AS tutor_last_name,
+                   a.tutor_id AS assigned_tutor_id
+            FROM $classrooms_table c
+            LEFT JOIN $assignments_table a ON a.classroom_id = c.id
+            LEFT JOIN $tutors_table u ON u.id = a.tutor_id
+            WHERE c.semester_id = %d";
+    $params = [$semester_id];
+
+    if ($selected_school !== '') {
+        $sql .= ' AND c.school = %s';
+        $params[] = $selected_school;
     }
-    if ($selected_subject) {
-        $sql .= $wpdb->prepare(" AND subject = %s", $selected_subject);
+    if ($selected_subject !== '') {
+        $sql .= ' AND c.subject = %s';
+        $params[] = $selected_subject;
     }
-    $sql .= " ORDER BY school, subject ASC";
-    $classrooms = $wpdb->get_results($sql);
+    if ($selected_assignment === 'unassigned') {
+        $sql .= ' AND a.id IS NULL';
+    } elseif ($selected_assignment === 'assigned') {
+        $sql .= ' AND a.id IS NOT NULL';
+    }
+
+    $sql .= ' ORDER BY c.school ASC, c.subject ASC';
+    $classrooms = $wpdb->get_results($wpdb->prepare($sql, $params));
+
+    $working = gtp_get_semester($semester_id);
 
     ob_start();
     ?>
-    <div style="max-width:1000px; margin:20px auto; padding:20px; background:#f9f9f9; border-radius:8px;">
-        <h2>Edit Classrooms</h2>
-        <form method="get">
-            <input type="hidden" name="page_id" value="<?php echo get_the_ID(); ?>">
+    <div class="gtp-page">
+        <?php echo gtp_dashboard_back_link('admin'); ?>
+        <h1 class="gtp-page-title">Edit Classrooms</h1>
+        <p class="gtp-page-intro">Showing classes for working semester: <strong><?php echo esc_html(gtp_semester_label($working)); ?></strong></p>
+        <form method="get" action="<?php echo esc_url($base_url); ?>" style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:16px;">
             <select name="school">
                 <option value="">-- All Schools --</option>
-                <?php foreach ($schools as $school): ?>
+                <?php foreach ($schools as $school) : ?>
                     <option value="<?php echo esc_attr($school); ?>" <?php selected($selected_school, $school); ?>><?php echo esc_html($school); ?></option>
                 <?php endforeach; ?>
             </select>
             <select name="subject">
                 <option value="">-- All Subjects --</option>
-                <?php foreach ($subjects as $subject): ?>
+                <?php foreach ($subjects as $subject) : ?>
                     <option value="<?php echo esc_attr($subject); ?>" <?php selected($selected_subject, $subject); ?>><?php echo esc_html($subject); ?></option>
                 <?php endforeach; ?>
             </select>
+            <select name="assignment">
+                <option value="" <?php selected($selected_assignment, ''); ?>>-- All assignment statuses --</option>
+                <option value="unassigned" <?php selected($selected_assignment, 'unassigned'); ?>>Not assigned to a tutor</option>
+                <option value="assigned" <?php selected($selected_assignment, 'assigned'); ?>>Assigned to a tutor</option>
+            </select>
             <input type="submit" value="Filter" class="button">
+            <?php if ($selected_school || $selected_subject || $selected_assignment) : ?>
+                <a class="button" href="<?php echo esc_url($base_url); ?>">Clear</a>
+            <?php endif; ?>
         </form>
         <table class="wp-list-table widefat fixed striped" style="border-collapse: collapse; width: 100%;">
             <thead>
@@ -178,27 +243,35 @@ function gtp_edit_classrooms_shortcode() {
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($classrooms as $classroom): ?>
-                    <?php
-                    $assigned_tutor_id = $wpdb->get_var($wpdb->prepare("SELECT tutor_id FROM $assignments_table WHERE classroom_id = %d", $classroom->id));
-                    $tutor_name = 'Unassigned';
-                    if ($assigned_tutor_id) {
-                        $tutor = $wpdb->get_row($wpdb->prepare("SELECT first_name, last_name FROM $tutors_table WHERE id = %d", $assigned_tutor_id));
-                        $tutor_name = $tutor->first_name . ' ' . $tutor->last_name;
-                    }
-                    ?>
-                    <tr style="cursor: pointer;" onclick="window.location='?page_id=<?php echo get_the_ID(); ?>&edit_id=<?php echo $classroom->id; ?>'">
-                        <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($classroom->school); ?></td>
-                        <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($classroom->subject); ?></td>
-                        <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($classroom->teacher_first_name . ' ' . $classroom->teacher_last_name); ?></td>
-                        <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($classroom->time_slot); ?></td>
-                        <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($tutor_name); ?></td>
-                        <td style="border: 1px solid #ddd; padding: 8px;"><a href="?page_id=<?php echo get_the_ID(); ?>&edit_id=<?php echo $classroom->id; ?>" class="button">Edit</a></td>
+                <?php if (empty($classrooms)) : ?>
+                    <tr>
+                        <td colspan="6" style="border: 1px solid #ddd; padding: 8px;">No classrooms match these filters.</td>
                     </tr>
-                <?php endforeach; ?>
+                <?php else : ?>
+                    <?php foreach ($classrooms as $classroom) :
+                        $tutor_name = 'Unassigned';
+                        if (!empty($classroom->assigned_tutor_id)) {
+                            $tutor_name = trim(($classroom->tutor_first_name ?? '') . ' ' . ($classroom->tutor_last_name ?? ''));
+                        }
+                        $edit_url = add_query_arg([
+                            'edit_id' => $classroom->id,
+                            'school' => $selected_school,
+                            'subject' => $selected_subject,
+                            'assignment' => $selected_assignment,
+                        ], $base_url);
+                        ?>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($classroom->school); ?></td>
+                            <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($classroom->subject); ?></td>
+                            <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($classroom->teacher_first_name . ' ' . $classroom->teacher_last_name); ?></td>
+                            <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html(gtp_format_time_range($classroom->start_time, $classroom->end_time)); ?></td>
+                            <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($tutor_name); ?></td>
+                            <td style="border: 1px solid #ddd; padding: 8px;"><a href="<?php echo esc_url($edit_url); ?>" class="button">Edit</a></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </tbody>
         </table>
-        <p style="margin-top: 20px;"><a href="<?php echo esc_url(site_url('/index.php/admin-dashboard/')); ?>" class="button">← Return to Dashboard</a></p>
     </div>
     <?php
     return ob_get_clean();

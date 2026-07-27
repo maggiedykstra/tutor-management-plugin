@@ -1,0 +1,676 @@
+.gtp-home {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 8px 0 40px;
+}
+
+.gtp-home-hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px 24px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e2e2e2;
+}
+
+.gtp-home-avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #d0e8f3;
+    color: #0e4f6a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.gtp-home-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.gtp-home-hero-text h1 {
+    margin: 0 0 4px;
+    font-size: 1.75rem;
+    line-height: 1.2;
+}
+
+.gtp-home-hero-text p {
+    margin: 0;
+    color: #555;
+}
+
+.gtp-home-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    margin: 4px 0 0;
+    justify-content: flex-start;
+}
+
+.gtp-home-nav a,
+.gtp-home-nav a.is-secondary {
+    display: inline-block;
+    padding: 8px 14px;
+    background: var(--gtp-blue, #1d7196);
+    color: #fff !important;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+.gtp-home-nav a:hover,
+.gtp-home-nav a.is-secondary:hover {
+    background: var(--gtp-blue-dark, #165d7a);
+    color: #fff !important;
+}
+
+.gtp-home-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 28px;
+    align-items: start;
+}
+
+@media (max-width: 820px) {
+    .gtp-home-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .gtp-home-nav {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+.gtp-home-section {
+    margin-bottom: 8px;
+}
+
+.gtp-home-section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.gtp-home-section-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.gtp-home-section-header a {
+    font-size: 13px;
+}
+
+.gtp-home-class-list {
+    display: grid;
+    gap: 12px;
+}
+
+.gtp-home-class-card {
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    padding: 14px 16px;
+    background: #fff;
+}
+
+.gtp-home-class-card h3 {
+    margin: 0 0 8px;
+    font-size: 1.05rem;
+}
+
+.gtp-home-class-card p {
+    margin: 0 0 4px;
+    font-size: 14px;
+    color: #333;
+}
+
+.gtp-home-class-card .gtp-home-muted {
+    color: #666;
+    font-size: 13px;
+}
+
+.gtp-home-empty {
+    color: #666;
+    margin: 0;
+    padding: 12px 0;
+}
+
+.gtp-home-people {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 18px;
+}
+
+.gtp-home-person {
+    width: 92px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+}
+
+.gtp-home-person:hover .gtp-home-person-name,
+.gtp-home-person:focus .gtp-home-person-name {
+    color: var(--gtp-blue, #1d7196);
+    text-decoration: underline;
+}
+
+.gtp-home-person:focus {
+    outline: 2px solid var(--gtp-blue, #1d7196);
+    outline-offset: 3px;
+    border-radius: 8px;
+}
+
+.gtp-home-person .gtp-home-avatar {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 6px;
+    font-size: 18px;
+}
+
+.gtp-home-person-name {
+    font-size: 12px;
+    line-height: 1.3;
+    color: #222;
+    word-break: break-word;
+}
+
+/* Tutor profile modal */
+.gtp-tutor-profile-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    pointer-events: none;
+    background: transparent !important;
+}
+
+.gtp-tutor-profile-modal[hidden] {
+    display: none !important;
+}
+
+.gtp-tutor-profile-backdrop {
+    display: none !important;
+}
+
+.gtp-tutor-profile-dialog {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    border-radius: 8px;
+    max-width: 520px;
+    width: 100%;
+    max-height: 85vh;
+    overflow: auto;
+    padding: 22px 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border: 1px solid #d8d8d8;
+    pointer-events: auto;
+}
+
+.gtp-tutor-profile-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    border: none;
+    background: transparent;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    color: #444;
+}
+
+.gtp-tutor-profile-header {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-right: 24px;
+}
+
+.gtp-tutor-profile-header h2 {
+    margin: 0 0 2px;
+    font-size: 1.35rem;
+}
+
+.gtp-tutor-profile-avatar {
+    width: 72px;
+    height: 72px;
+    font-size: 22px;
+}
+
+.gtp-tutor-profile-muted {
+    color: #666;
+    font-size: 13px;
+    margin: 0;
+}
+
+.gtp-tutor-profile-fields p {
+    margin: 0 0 8px;
+}
+
+.gtp-tutor-profile-bio {
+    white-space: pre-wrap;
+    line-height: 1.45;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.gtp-tutor-profile-prefs,
+.gtp-tutor-profile-classes {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.gtp-tutor-profile-prefs li,
+.gtp-tutor-profile-classes li {
+    margin-bottom: 6px;
+}
+
+.gtp-tutor-profile-empty {
+    color: #666;
+    margin: 0;
+    font-size: 14px;
+}
+
+.gtp-home-stats {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    margin: 0 0 22px;
+    align-items: stretch;
+}
+
+.gtp-home-aside .gtp-home-announcements {
+    margin-top: 0;
+}
+
+.gtp-home-stat {
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    padding: 8px 10px;
+    min-width: 0;
+    flex: 1 1 0;
+    background: #fff;
+    text-align: left;
+}
+
+.gtp-home-stat strong {
+    display: block;
+    font-size: 1.15rem;
+    line-height: 1.1;
+}
+
+.gtp-home-stat span {
+    display: block;
+    font-size: 11px;
+    line-height: 1.25;
+    color: #555;
+    margin-top: 2px;
+}
+
+a.gtp-home-stat {
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+a.gtp-home-stat:hover {
+    border-color: var(--gtp-blue, #1d7196);
+    box-shadow: 0 0 0 1px rgba(29, 113, 150, 0.18);
+}
+
+a.gtp-home-stat.has-alerts,
+a.gtp-home-stat-alert.has-alerts {
+    border-color: var(--gtp-blue, #1d7196);
+    background: #e8f4fb;
+}
+
+a.gtp-home-stat.has-alerts strong,
+a.gtp-home-stat-alert.has-alerts strong {
+    color: var(--gtp-blue, #1d7196);
+}
+
+a.gtp-home-stat-alert:hover {
+    border-color: var(--gtp-blue-dark, #165d7a);
+    box-shadow: 0 0 0 1px rgba(29, 113, 150, 0.2);
+}
+
+@media (max-width: 640px) {
+    .gtp-home-stats {
+        flex-wrap: wrap;
+    }
+
+    .gtp-home-stat {
+        flex: 1 1 calc(50% - 8px);
+    }
+}
+
+.gtp-flag-new {
+    color: var(--gtp-blue, #1d7196) !important;
+}
+
+.gtp-home-flagged-wrap .gtp-home-ann-item.is-unread a.gtp-home-ann-link {
+    background: #e8f4fb;
+}
+
+.gtp-home-success {
+    color: #1a7f37;
+    font-weight: 700;
+    margin-bottom: 14px;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.gtp-home-notice {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 12px;
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border: 1px solid #b8d8e8;
+    border-radius: 8px;
+    background: #e8f4fb;
+    color: #0e4f6a;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.gtp-home-notice strong {
+    font-weight: 700;
+}
+
+.gtp-home-notice a {
+    font-weight: 600;
+    color: var(--gtp-blue, #1d7196);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.gtp-home-notice a:hover {
+    text-decoration: underline;
+}
+
+/* Announcements widget on home — bordered panel aligns with stats cards */
+.gtp-home-ann-panel {
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.gtp-home-ann-panel-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+}
+
+.gtp-home-ann-panel-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    line-height: 1.3;
+}
+
+.gtp-home-ann-panel-header a {
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.gtp-home-ann-panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: baseline;
+    justify-content: flex-end;
+}
+
+.gtp-home-ann-count {
+    color: var(--gtp-blue, #1d7196);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.gtp-home-ann-empty {
+    margin: 0;
+    padding: 14px;
+}
+
+.gtp-home-ann-item {
+    border-bottom: 1px solid #eee;
+}
+
+.gtp-home-ann-item:last-child {
+    border-bottom: none;
+}
+
+.gtp-home-ann-item a.gtp-home-ann-link {
+    display: block;
+    padding: 12px 14px;
+    text-decoration: none;
+    color: #222;
+}
+
+.gtp-home-ann-item.is-unread a.gtp-home-ann-link {
+    font-weight: 700;
+    background: #ecf5fb;
+}
+
+.gtp-home-ann-item.is-active {
+    background: #dff0fa;
+}
+
+.gtp-home-ann-meta {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: 400;
+    color: #666;
+}
+
+.gtp-home-ann-new {
+    color: var(--gtp-blue, #1d7196);
+    font-weight: 700;
+}
+
+.gtp-home-ann-detail {
+    padding: 14px;
+    border-top: 1px solid #eee;
+    background: #fafafa;
+}
+
+.gtp-home-ann-detail h3 {
+    margin: 0 0 6px;
+    font-size: 1.05rem;
+}
+
+.gtp-home-ann-detail .gtp-home-ann-body {
+    white-space: pre-wrap;
+    line-height: 1.5;
+    margin-top: 10px;
+}
+
+/* Manage people / unassigned tutors */
+.gtp-people-page h1 {
+    margin: 0 0 6px;
+    font-size: 1.6rem;
+}
+
+.gtp-people-muted {
+    color: #666;
+    font-size: 13px;
+}
+
+.gtp-people-filters {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+    margin: 18px 0 14px;
+    padding: 14px;
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.gtp-people-filters label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+    color: #444;
+}
+
+.gtp-people-filters input,
+.gtp-people-filters select {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.gtp-people-filter-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.gtp-people-table-wrap {
+    overflow-x: auto;
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.gtp-people-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.gtp-people-table th,
+.gtp-people-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+    vertical-align: top;
+}
+
+.gtp-people-table th {
+    background: #f7f7f7;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: #555;
+}
+
+.gtp-people-table tr:last-child td {
+    border-bottom: none;
+}
+
+.gtp-people-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.gtp-people-avatar,
+.gtp-unassigned-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+}
+
+.gtp-unassigned-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.gtp-unassigned-item {
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.gtp-unassigned-item summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+}
+
+.gtp-unassigned-item summary::-webkit-details-marker {
+    display: none;
+}
+
+.gtp-unassigned-summary-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.gtp-unassigned-chevron {
+    color: #666;
+    transition: transform 0.15s ease;
+}
+
+.gtp-unassigned-item[open] .gtp-unassigned-chevron {
+    transform: rotate(180deg);
+}
+
+.gtp-unassigned-body {
+    padding: 0 14px 14px 66px;
+    border-top: 1px solid #eee;
+}
+
+.gtp-people-prefs {
+    margin: 6px 0 0;
+    padding-left: 18px;
+}
+
+.gtp-people-prefs li {
+    margin-bottom: 4px;
+}
+
+@media (max-width: 900px) {
+    .gtp-people-filters {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .gtp-people-filter-actions {
+        grid-column: 1 / -1;
+    }
+
+    .gtp-unassigned-body {
+        padding-left: 14px;
+    }
+}

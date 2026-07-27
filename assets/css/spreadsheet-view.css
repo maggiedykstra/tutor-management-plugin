@@ -1,0 +1,182 @@
+.gtp-spreadsheet-wrap {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 10px 0 24px;
+    background: transparent;
+}
+
+.gtp-spreadsheet-subject-form {
+    margin: 16px 0 20px;
+}
+
+.gtp-spreadsheet-subjects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 24px;
+}
+
+.gtp-spreadsheet-subject-option {
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.gtp-spreadsheet-empty {
+    padding: 24px 8px;
+    font-size: 14px;
+    color: #444;
+}
+
+.gtp-spreadsheet-main {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    min-height: 280px;
+}
+
+.gtp-spreadsheet-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: baseline;
+    gap: 4px 8px;
+    margin: 0 0 10px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #444;
+}
+
+.gtp-spreadsheet-meta strong {
+    font-weight: 600;
+    color: #222;
+}
+
+.gtp-ss-meta-sep {
+    color: #bbb;
+    user-select: none;
+}
+
+.gtp-ss-meta-zoom {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gtp-ss-meta-zoom a {
+    font-size: 14px;
+}
+
+.gtp-spreadsheet-scroll {
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #222;
+    background: #fff;
+    max-width: 100%;
+}
+
+.gtp-spreadsheet-table {
+    border-collapse: collapse;
+    width: max-content;
+    min-width: 100%;
+    font-size: 13px;
+}
+
+.gtp-spreadsheet-table th,
+.gtp-spreadsheet-table td {
+    border: 1px solid #222;
+    padding: 6px 8px;
+    vertical-align: top;
+}
+
+.gtp-ss-label {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #fff;
+    text-align: left;
+    font-weight: 700;
+    white-space: nowrap;
+    min-width: 130px;
+    max-width: 180px;
+}
+
+.gtp-ss-student {
+    font-weight: 500;
+    white-space: normal;
+}
+
+.gtp-ss-cell {
+    min-width: 110px;
+    max-width: 160px;
+    text-align: center;
+}
+
+.gtp-ss-date {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.gtp-ss-topic,
+.gtp-ss-notes {
+    text-align: left;
+    white-space: normal;
+    word-break: break-word;
+    min-height: 48px;
+}
+
+.gtp-ss-att {
+    font-variant-numeric: tabular-nums;
+}
+
+.gtp-ss-roster-header th,
+.gtp-ss-roster-header td {
+    background: #f3f3f3;
+}
+
+.gtp-ss-empty-msg {
+    text-align: left;
+    padding: 12px;
+    color: #666;
+}
+
+.gtp-spreadsheet-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border: 1px solid #ccc;
+    background: #e8e8e8;
+    padding: 6px 6px 0;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin-top: 12px;
+}
+
+.gtp-spreadsheet-tab {
+    display: inline-block;
+    padding: 8px 14px;
+    margin-right: 2px;
+    background: #d0d0d0;
+    color: #222;
+    text-decoration: none;
+    border: 1px solid #999;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+.gtp-spreadsheet-tab:hover {
+    background: #e4e4e4;
+    color: #111;
+}
+
+.gtp-spreadsheet-tab.is-active {
+    background: #fff;
+    font-weight: 700;
+    position: relative;
+    top: 1px;
+    border-bottom: 1px solid #fff;
+}

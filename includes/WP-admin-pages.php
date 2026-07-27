@@ -4,7 +4,7 @@
 // Register the admin menu
 add_action('admin_menu', function () {
     add_menu_page(
-        'Tutor Dashboard',              // Page title
+        'TA Dashboard',                 // Page title
         'Tutor Management',             // Menu title
         'manage_options',               // Capability
         'tutor-dashboard',              // Menu slug

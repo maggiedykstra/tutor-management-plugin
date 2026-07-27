@@ -25,12 +25,24 @@ function gtp_update_db_schema() {
         gtp_create_class_assignments_table();
         gtp_create_sessions_table();
         gtp_create_students_table();
+        gtp_create_password_tokens_table();
+        gtp_create_announcements_table();
+        gtp_create_announcement_recipients_table();
+        gtp_create_flagged_session_reviews_table();
+        gtp_create_resource_files_table();
+        gtp_create_resource_faq_table();
+        gtp_create_monthly_checkins_table();
+        gtp_create_school_years_table();
+        gtp_create_semesters_table();
+        gtp_create_site_bugs_table();
 
         // Apply incremental schema updates
         gtp_migrate_users_table();
         gtp_migrate_classrooms_table();
         gtp_migrate_assignments_table();
         gtp_migrate_students_table();
+        gtp_migrate_sessions_table();
+        gtp_migrate_semester_columns();
 
         update_option('gtp_db_version', GTP_DB_VERSION);
     }

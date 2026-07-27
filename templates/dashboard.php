@@ -1,4 +1,4 @@
 <div class="wrap">
-    <h1>Tutor Dashboard</h1>
-    <p>Welcome to the Tutor Management Plugin!</p>
+    <h1>TA Dashboard</h1>
+    <p>Welcome to Tutor Management.</p>
 </div>

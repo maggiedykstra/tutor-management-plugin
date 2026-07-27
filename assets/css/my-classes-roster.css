@@ -1,0 +1,332 @@
+.gtp-my-classes .gtp-class-card {
+    margin-bottom: 20px;
+    padding: 18px 20px;
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.gtp-class-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.gtp-my-classes .gtp-class-card h2 {
+    margin: 0;
+}
+
+.gtp-edit-class-info-btn {
+    white-space: nowrap;
+    font-size: 13px !important;
+}
+
+.gtp-class-info-view p {
+    margin: 0 0 8px;
+}
+
+.gtp-info-zoom-row {
+    margin-bottom: 14px !important;
+    word-break: break-word;
+}
+
+.gtp-class-info-edit {
+    margin-bottom: 14px;
+    padding: 14px;
+    border: 1px solid #e2e2e2;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.gtp-class-info-fields {
+    display: grid;
+    gap: 12px;
+}
+
+.gtp-class-info-fields label {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    font-weight: 600;
+}
+
+.gtp-class-info-fields label span {
+    font-size: 13px;
+}
+
+.gtp-class-info-fields input {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    font-weight: 400;
+}
+
+.gtp-class-info-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+@media (max-width: 640px) {
+    .gtp-class-card-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .gtp-class-info-two-col {
+        grid-template-columns: 1fr;
+    }
+}
+
+.gtp-class-info-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.gtp-class-info-message {
+    min-height: 1.2em;
+    margin: 8px 0 0;
+}
+
+.gtp-roster-details {
+    margin: 14px 0 16px;
+    border: 1px solid #e2e2e2;
+    border-radius: 8px;
+    background: #fafafa;
+    overflow: hidden;
+}
+
+.gtp-roster-details > summary {
+    cursor: pointer;
+    font-weight: 600;
+    padding: 12px 14px;
+    list-style: none;
+    user-select: none;
+}
+
+.gtp-roster-details > summary::-webkit-details-marker {
+    display: none;
+}
+
+.gtp-roster-details > summary::before {
+    content: '▸';
+    display: inline-block;
+    margin-right: 8px;
+    transition: transform 0.15s ease;
+}
+
+.gtp-roster-details[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+.gtp-roster-count {
+    color: #666;
+    font-weight: 500;
+}
+
+.gtp-roster-panel {
+    padding: 0 14px 14px;
+}
+
+.gtp-roster-list {
+    list-style: none;
+    margin: 0 0 12px;
+    padding: 0;
+    border: 1px solid #e2e2e2;
+    border-radius: 6px;
+    background: #fff;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.gtp-roster-list li {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    margin: 0;
+}
+
+.gtp-roster-list li:last-child {
+    border-bottom: none;
+}
+
+.gtp-roster-empty {
+    color: #777;
+    font-style: italic;
+}
+
+.gtp-roster-modal[hidden] {
+    display: none !important;
+}
+
+.gtp-roster-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    box-sizing: border-box;
+    /* Soft overlay so the full page stays visible behind the popup */
+    background: rgba(15, 23, 42, 0.25);
+}
+
+.gtp-roster-modal-backdrop {
+    display: none;
+}
+
+.gtp-roster-modal-dialog {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+    padding: 20px;
+}
+
+.gtp-roster-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.gtp-roster-modal-header h3 {
+    margin: 0;
+}
+
+.gtp-roster-modal-close {
+    border: none;
+    background: transparent;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    color: #555;
+    padding: 0 4px;
+}
+
+.gtp-roster-modal-subtitle {
+    margin: 0 0 14px;
+    color: #555;
+}
+
+.gtp-modal-student-list {
+    border: 1px solid #e2e2e2;
+    border-radius: 6px;
+    max-height: 180px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+    background: #fafafa;
+}
+
+.gtp-modal-student-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: none;
+    border-bottom: 1px solid #e2e2e2;
+    background: transparent;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.gtp-modal-student-item:last-child {
+    border-bottom: none;
+}
+
+.gtp-modal-student-item:hover {
+    background: #e8f4fb;
+}
+
+.gtp-modal-student-item.is-selected {
+    background: #dff0fa;
+    font-weight: 600;
+}
+
+.gtp-modal-empty {
+    padding: 12px;
+    color: #777;
+    font-style: italic;
+}
+
+.gtp-modal-list-actions {
+    display: flex;
+    justify-content: flex-start;
+    margin: 0 0 8px;
+}
+
+.gtp-plus-student-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 !important;
+    font-size: 22px !important;
+    line-height: 1 !important;
+    font-weight: 600;
+}
+
+.gtp-modal-edit-panel,
+.gtp-modal-add-panel {
+    border-top: 1px solid #eee;
+    padding-top: 14px;
+    margin-top: 8px;
+}
+
+.gtp-modal-edit-panel h4,
+.gtp-modal-add-panel h4 {
+    margin: 0 0 10px;
+}
+
+.gtp-modal-fields {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.gtp-modal-fields input {
+    flex: 1;
+    min-width: 140px;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.gtp-modal-edit-actions,
+.gtp-modal-add-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.gtp-remove-btn {
+    color: #8a1f1f !important;
+}
+
+.gtp-roster-modal-message {
+    min-height: 1.2em;
+    margin: 10px 0 0;
+}
+
+.gtp-roster-modal-footer {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+}

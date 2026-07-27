@@ -1,0 +1,182 @@
+.gtp-resources-page h1 {
+    margin: 0 0 6px;
+    font-size: 1.6rem;
+}
+
+.gtp-resources-intro {
+    margin: 0 0 20px;
+    color: #555;
+}
+
+.gtp-resources-section {
+    margin-bottom: 32px;
+}
+
+.gtp-resources-section-header h2 {
+    margin: 0 0 12px;
+    font-size: 1.25rem;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e2e2;
+}
+
+.gtp-resources-empty {
+    color: #666;
+    margin: 0 0 14px;
+}
+
+.gtp-resources-file-list {
+    list-style: none;
+    margin: 0 0 16px;
+    padding: 0;
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.gtp-resources-file {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.gtp-resources-file:last-child {
+    border-bottom: none;
+}
+
+.gtp-resources-file-title {
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--gtp-blue, #1d7196);
+}
+
+.gtp-resources-file-title:hover {
+    text-decoration: underline;
+}
+
+.gtp-resources-file-desc {
+    margin: 6px 0 0;
+    color: #333;
+}
+
+.gtp-resources-file-meta {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.gtp-resources-admin-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-shrink: 0;
+    font-size: 13px;
+}
+
+.gtp-resources-admin-actions form {
+    margin: 0;
+}
+
+.gtp-resources-link-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #8a1f1f;
+    cursor: pointer;
+    font-size: 13px;
+    text-decoration: underline;
+}
+
+.gtp-resources-faq-list {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.gtp-resources-faq-item {
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.gtp-resources-faq-item summary {
+    cursor: pointer;
+    padding: 12px 14px;
+    font-weight: 600;
+}
+
+.gtp-resources-faq-answer {
+    padding: 0 14px 14px;
+    color: #333;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.gtp-resources-admin-box {
+    margin-top: 14px;
+    padding: 16px;
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    background: #f7fafc;
+}
+
+.gtp-resources-admin-box h3 {
+    margin: 0 0 12px;
+    font-size: 1.05rem;
+}
+
+.gtp-resources-form {
+    display: grid;
+    gap: 12px;
+}
+
+.gtp-resources-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: #444;
+}
+
+.gtp-resources-form input[type="text"],
+.gtp-resources-form textarea,
+.gtp-resources-form input[type="file"] {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fff;
+}
+
+.gtp-resources-form-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.gtp-resources-msg {
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin: 0 0 14px;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.gtp-resources-msg.is-success {
+    background: #edf7ed;
+    color: #1a7f37;
+}
+
+.gtp-resources-msg.is-error {
+    background: #fdecec;
+    color: #8a1f1f;
+}
+
+@media (max-width: 640px) {
+    .gtp-resources-file {
+        flex-direction: column;
+    }
+}

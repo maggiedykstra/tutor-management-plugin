@@ -1,0 +1,1446 @@
+/**
+ * Shared GTP front-end theme — matches dashboard colors / sizing.
+ */
+
+body.gtp-plugin-page {
+    --gtp-blue: #1d7196;
+    --gtp-blue-dark: #165d7a;
+    --gtp-blue-soft: #d0e8f3;
+    --gtp-blue-ink: #0e4f6a;
+    --gtp-text: #222;
+    --gtp-muted: #555;
+    --gtp-border: #d8d8d8;
+    --gtp-border-soft: #e2e2e2;
+    --gtp-bg: #fff;
+    --gtp-bg-soft: #f7fafc;
+    --gtp-warn: #b45309;
+    --gtp-warn-bg: #fffbeb;
+    --gtp-radius: 8px;
+    --gtp-font: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --gtp-content-max: 1100px;
+    /* Matches the comfortable side space on the admin dashboard */
+    --gtp-gutter: 24px;
+
+    font-family: var(--gtp-font);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--gtp-text);
+
+    /* Use GTP gutters instead of theme root side padding */
+    --wp--style--root--padding-left: 0px !important;
+    --wp--style--root--padding-right: 0px !important;
+}
+
+body.gtp-plugin-page .entry-content,
+body.gtp-plugin-page .wp-block-post-content,
+body.gtp-plugin-page .gtp-home,
+body.gtp-plugin-page .gtp-page {
+    font-family: var(--gtp-font);
+    color: var(--gtp-text);
+}
+
+/* Shared content column — same width + side margins on every page */
+body.gtp-plugin-page .wp-site-blocks {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+body.gtp-plugin-page main.wp-block-group,
+body.gtp-plugin-page .wp-block-group.is-layout-constrained {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+body.gtp-plugin-page .entry-content,
+body.gtp-plugin-page .wp-block-post-content {
+    width: 100%;
+    max-width: var(--gtp-content-max) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: var(--gtp-gutter) !important;
+    padding-right: var(--gtp-gutter) !important;
+    box-sizing: border-box !important;
+}
+
+/* Inner shells fill the shared column (don't re-center / re-pad) */
+body.gtp-plugin-page .gtp-home,
+body.gtp-plugin-page .gtp-page {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 8px 0 40px;
+    box-sizing: border-box;
+}
+
+/* Standardized back link */
+.gtp-page-back {
+    margin: 0 0 14px;
+}
+
+.gtp-page-back a,
+a.gtp-back-link {
+    display: inline-block;
+    padding: 7px 12px;
+    background: var(--gtp-blue, #1d7196);
+    color: #fff !important;
+    text-decoration: none !important;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.3;
+    font-weight: 500;
+    border: none;
+}
+
+.gtp-page-back a:hover,
+a.gtp-back-link:hover {
+    background: var(--gtp-blue-dark, #165d7a);
+    color: #fff !important;
+}
+
+/* Subpage titles — compact, dashboard-section scale (not huge WP H1s) */
+body.gtp-plugin-page .gtp-page-title,
+body.gtp-plugin-page .gtp-home > h1,
+body.gtp-plugin-page .gtp-page > h1,
+body.gtp-plugin-page .gtp-checkin-page > h1,
+body.gtp-plugin-page .gtp-resources-page > h1,
+body.gtp-plugin-page .gtp-people-page > h1,
+body.gtp-plugin-page .gtp-announcements-wrap > h2,
+body.gtp-plugin-page .gtp-announcements-inbox > h2,
+body.gtp-plugin-page .gtp-session-filter-wrap > h2,
+body.gtp-plugin-page .gtp-flagged-page > h2 {
+    margin: 0 0 8px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--gtp-text, #222);
+}
+
+/* Keep dashboard welcome as the one larger title */
+body.gtp-plugin-page .gtp-home-hero-text h1 {
+    margin: 0 0 4px;
+    font-size: 1.75rem;
+    line-height: 1.2;
+}
+
+body.gtp-plugin-page .gtp-page-intro,
+body.gtp-plugin-page .gtp-checkin-intro,
+body.gtp-plugin-page .gtp-resources-intro,
+body.gtp-plugin-page .gtp-people-muted {
+    margin: 0 0 16px;
+    color: var(--gtp-muted, #555);
+    font-size: 14px;
+}
+
+body.gtp-plugin-page h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--gtp-text, #222);
+}
+
+body.gtp-plugin-page h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+body.gtp-plugin-page a:not(.gtp-back-link):not(.gtp-home-nav a):not(.button):not(.button-primary):not(.gtp-home-stat):not(.gtp-top-report):not(.gtp-semester-manage) {
+    color: var(--gtp-blue, #1d7196);
+}
+
+/* Native WP .button → dashboard blue chips */
+body.gtp-plugin-page .button,
+body.gtp-plugin-page .button-secondary,
+body.gtp-plugin-page input.button,
+body.gtp-plugin-page button.button {
+    display: inline-block;
+    padding: 8px 14px;
+    background: var(--gtp-blue, #1d7196);
+    color: #fff !important;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.3;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: none;
+    height: auto;
+}
+
+body.gtp-plugin-page .button:hover,
+body.gtp-plugin-page .button-secondary:hover,
+body.gtp-plugin-page input.button:hover,
+body.gtp-plugin-page button.button:hover {
+    background: var(--gtp-blue-dark, #165d7a);
+    color: #fff !important;
+}
+
+body.gtp-plugin-page .button-primary,
+body.gtp-plugin-page input.button-primary,
+body.gtp-plugin-page button.button-primary {
+    background: var(--gtp-blue, #1d7196);
+    color: #fff !important;
+    border: none;
+    text-shadow: none;
+}
+
+body.gtp-plugin-page .button-primary:hover,
+body.gtp-plugin-page input.button-primary:hover {
+    background: var(--gtp-blue-dark, #165d7a);
+}
+
+/* Forms */
+body.gtp-plugin-page input[type="text"],
+body.gtp-plugin-page input[type="email"],
+body.gtp-plugin-page input[type="password"],
+body.gtp-plugin-page input[type="search"],
+body.gtp-plugin-page input[type="date"],
+body.gtp-plugin-page input[type="time"],
+body.gtp-plugin-page input[type="tel"],
+body.gtp-plugin-page input[type="number"],
+body.gtp-plugin-page select,
+body.gtp-plugin-page textarea {
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--gtp-text, #222);
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 8px 10px;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+body.gtp-plugin-page label {
+    font-size: 13px;
+    color: #444;
+}
+
+/* Tables */
+body.gtp-plugin-page table {
+    font-size: 14px;
+}
+
+body.gtp-plugin-page .wp-list-table th {
+    font-size: 12px;
+}
+
+/* Cards / bordered panels */
+body.gtp-plugin-page .gtp-panel,
+body.gtp-plugin-page .gtp-resources-admin-box,
+body.gtp-plugin-page .gtp-checkin-form,
+body.gtp-plugin-page .gtp-people-filters,
+body.gtp-plugin-page .gtp-checkin-filters {
+    border-color: var(--gtp-border, #d8d8d8);
+    border-radius: var(--gtp-radius, 8px);
+    background: var(--gtp-bg, #fff);
+}
+
+/* Slim top chrome — same column + gutters as page content */
+.gtp-top-chrome {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100000;
+    border-bottom: 1px solid var(--gtp-border, #d8d8d8);
+    background: transparent;
+    font-family: var(--gtp-font, "Segoe UI", "Helvetica Neue", Arial, sans-serif);
+}
+
+body.admin-bar .gtp-top-chrome {
+    top: 32px;
+}
+
+@media screen and (max-width: 782px) {
+    body.admin-bar .gtp-top-chrome {
+        top: 46px;
+    }
+}
+
+.gtp-top-chrome-inner {
+    width: 100%;
+    max-width: var(--gtp-content-max, 1100px);
+    margin: 0 auto;
+    padding: 4px var(--gtp-gutter, 24px);
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-sizing: border-box;
+}
+
+.gtp-top-chrome-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.gtp-top-chrome-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.gtp-top-report {
+    font-size: 12px;
+    font-family: inherit;
+    font-weight: 500;
+    color: var(--gtp-blue, #1d7196) !important;
+    text-decoration: none !important;
+    white-space: nowrap;
+}
+
+.gtp-top-report:hover {
+    text-decoration: underline !important;
+    color: var(--gtp-blue-dark, #165d7a) !important;
+}
+
+.gtp-semester-switcher {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.gtp-semester-switcher label {
+    font-size: 12px;
+    font-family: inherit;
+    font-weight: 500;
+    color: var(--gtp-muted, #555);
+    margin: 0;
+    white-space: nowrap;
+}
+
+.gtp-semester-switcher select {
+    --gtp-sem-pad: 6px;
+    --gtp-sem-chevron: 14px;
+    font-size: 12px !important;
+    font-family: inherit !important;
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+    color: var(--gtp-muted, #555) !important;
+    /* Equal left/right text inset; extra right room only for the chevron */
+    padding: 2px calc(var(--gtp-sem-pad) + var(--gtp-sem-chevron)) 2px var(--gtp-sem-pad) !important;
+    border-radius: 4px;
+    border: 1px solid var(--gtp-border, #d8d8d8);
+    background-color: #fff;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    height: 26px;
+    box-sizing: border-box;
+    vertical-align: middle;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23555' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--gtp-sem-pad) center;
+    background-size: 8px 5px;
+}
+
+.gtp-semester-manage {
+    font-size: 12px;
+    font-family: inherit;
+    font-weight: 500;
+    color: var(--gtp-blue, #1d7196) !important;
+    text-decoration: none !important;
+    white-space: nowrap;
+}
+
+.gtp-top-logout {
+    flex-shrink: 0;
+    padding: 4px 10px !important;
+    font-size: 12px !important;
+    font-family: inherit !important;
+    font-weight: 500 !important;
+}
+
+/* Clearance under the slim top line */
+body.gtp-plugin-page.has-gtp-top-chrome .wp-site-blocks {
+    padding-top: 0 !important;
+}
+
+body.gtp-plugin-page.has-gtp-top-chrome .entry-content,
+body.gtp-plugin-page.has-gtp-top-chrome .wp-block-post-content {
+    padding-top: 48px !important;
+}
+
+body.gtp-plugin-page.has-gtp-top-chrome .gtp-home,
+body.gtp-plugin-page.has-gtp-top-chrome .gtp-page {
+    padding-top: 8px !important;
+}
+
+/* Manage semesters — cleaner list */
+.gtp-sem-list-section {
+    margin-top: 8px;
+}
+
+.gtp-sem-list-heading {
+    margin: 0 0 6px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--gtp-text, #222);
+}
+
+.gtp-sem-list-hint {
+    margin: 0 0 20px;
+    font-size: 13px;
+    color: var(--gtp-muted, #555);
+    line-height: 1.45;
+}
+
+.gtp-sem-list-hint strong {
+    color: var(--gtp-text, #222);
+    font-weight: 600;
+}
+
+.gtp-sem-year-group {
+    margin-bottom: 28px;
+}
+
+.gtp-sem-year-label {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--gtp-muted, #555);
+}
+
+.gtp-sem-cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.gtp-sem-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    border: 1px solid var(--gtp-border-soft, #e2e2e2);
+    border-radius: var(--gtp-radius, 8px);
+    background: var(--gtp-bg, #fff);
+}
+
+.gtp-sem-card.is-working {
+    border-color: var(--gtp-blue-soft, #d0e8f3);
+    background: var(--gtp-bg-soft, #f7fafc);
+}
+
+.gtp-sem-card-main {
+    min-width: 0;
+    flex: 1;
+}
+
+.gtp-sem-card-title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.gtp-sem-card-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gtp-text, #222);
+}
+
+.gtp-sem-card-meta {
+    font-size: 13px;
+    color: var(--gtp-muted, #555);
+}
+
+.gtp-sem-status {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+    padding: 2px 8px;
+    border-radius: 999px;
+    line-height: 1.4;
+}
+
+.gtp-sem-status--planning {
+    background: #f0f0f0;
+    color: #555;
+}
+
+.gtp-sem-status--live {
+    background: #e6f4ea;
+    color: #137333;
+}
+
+.gtp-sem-status--closed {
+    background: #f5f5f5;
+    color: #777;
+}
+
+.gtp-sem-pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 999px;
+    line-height: 1.4;
+}
+
+.gtp-sem-pill--working {
+    background: var(--gtp-blue-soft, #d0e8f3);
+    color: var(--gtp-blue-ink, #0e4f6a);
+}
+
+.gtp-sem-pill--live {
+    background: #e6f4ea;
+    color: #137333;
+}
+
+.gtp-sem-card-actions {
+    flex-shrink: 0;
+}
+
+.gtp-sem-card-form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    margin: 0;
+}
+
+.gtp-sem-action {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gtp-blue, #1d7196);
+    cursor: pointer;
+    text-align: right;
+    line-height: 1.35;
+}
+
+.gtp-sem-action:hover {
+    color: var(--gtp-blue-dark, #165d7a);
+    text-decoration: underline;
+}
+
+.gtp-sem-action--primary {
+    font-weight: 600;
+}
+
+@media (max-width: 640px) {
+    body.gtp-plugin-page {
+        --gtp-gutter: 16px;
+    }
+
+    .gtp-sem-card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .gtp-sem-card-form {
+        align-items: flex-start;
+        padding-top: 4px;
+        border-top: 1px solid var(--gtp-border-soft, #e2e2e2);
+    }
+
+    .gtp-sem-action {
+        text-align: left;
+    }
+
+    .gtp-field-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Full-bleed auth screens (login, register, set password)                    */
+/* -------------------------------------------------------------------------- */
+
+body.gtp-auth-screen .entry-content,
+body.gtp-auth-screen .wp-block-post-content {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+body.gtp-auth-screen .wp-site-blocks,
+body.gtp-auth-screen main,
+body.gtp-auth-screen main.wp-block-group {
+    min-height: 100vh;
+}
+
+.gtp-login {
+    display: grid;
+    grid-template-columns: minmax(340px, 1fr) minmax(300px, 1fr);
+    min-height: 100vh;
+    width: 100%;
+    background: #fff;
+}
+
+.gtp-login--wide {
+    grid-template-columns: minmax(420px, 1.25fr) minmax(280px, 0.75fr);
+}
+
+/* Form column */
+.gtp-login-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 56px 48px;
+    background: #fff;
+    overflow-y: auto;
+}
+
+.gtp-login--wide .gtp-login-main {
+    align-items: flex-start;
+    padding-top: 56px;
+}
+
+.gtp-login-main-inner {
+    width: 100%;
+    max-width: 400px;
+    margin: 0;
+}
+
+.gtp-login-main-inner--wide {
+    max-width: 640px;
+}
+
+.gtp-login-brand {
+    margin: 0 0 40px;
+}
+
+.gtp-login-brand img {
+    display: block;
+    height: 44px;
+    width: auto;
+    max-width: 220px;
+    object-fit: contain;
+}
+
+.gtp-login-main h1 {
+    margin: 0 0 6px;
+    font-size: 1.65rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #111;
+}
+
+.gtp-login-sub {
+    margin: 0 0 28px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #6b7280;
+}
+
+.gtp-login .gtp-form-stack {
+    gap: 18px;
+}
+
+.gtp-login .gtp-field > span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111;
+}
+
+.gtp-login .gtp-field input {
+    min-height: 44px;
+    font-size: 15px;
+    border-color: #d1d5db;
+    border-radius: 6px;
+}
+
+.gtp-login .gtp-field input:focus {
+    border-color: #1d7196;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(29, 113, 150, 0.15);
+}
+
+.gtp-login-submit,
+a.gtp-login-submit {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px 16px !important;
+    font-size: 15px !important;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    border-radius: 6px !important;
+    background: #1d7196 !important;
+    color: #fff !important;
+}
+
+.gtp-login-submit:hover,
+a.gtp-login-submit:hover {
+    background: #165d7a !important;
+    color: #fff !important;
+}
+
+.gtp-login-alt {
+    margin: 28px 0 0;
+    font-size: 14px;
+    color: #6b7280;
+    text-align: center;
+}
+
+.gtp-login-text-btn {
+    appearance: none;
+    border: 0;
+    background: none;
+    padding: 0;
+    margin: 0 0 0 4px;
+    font: inherit;
+    font-weight: 600;
+    color: #1d7196;
+    cursor: pointer;
+}
+
+.gtp-login-text-btn:hover {
+    color: #165d7a;
+    text-decoration: underline;
+}
+
+.gtp-role-pick {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.gtp-role-pick legend {
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+    padding: 0;
+}
+
+.gtp-role-pick-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.gtp-role-pick-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+    padding: 12px;
+    border: 1px solid var(--gtp-border, #d8d8d8);
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.gtp-role-pick-option:has(input:checked) {
+    border-color: #1d7196;
+    background: #e8f4fb;
+    box-shadow: 0 0 0 1px rgba(29, 113, 150, 0.2);
+}
+
+.gtp-role-pick-option input {
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
+.gtp-role-pick-option span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.gtp-role-pick-option strong {
+    font-size: 14px;
+    color: #222;
+}
+
+.gtp-role-pick-option em {
+    font-style: normal;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.35;
+}
+
+@media (max-width: 520px) {
+    .gtp-role-pick-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Brand panel — right: logo centered at natural size, background extends around it */
+.gtp-login-aside {
+    background: #1d7196;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 40px;
+}
+
+.gtp-login-aside-logo {
+    display: block;
+    width: 95%;
+    max-width: 460px;
+    height: auto;
+    object-fit: contain;
+}
+
+.gtp-login .gtp-page-back {
+    margin: 0 0 20px;
+}
+
+.gtp-login .gtp-back-link {
+    background: transparent !important;
+    color: #1d7196 !important;
+    border: 0 !important;
+    padding: 0 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+.gtp-login .gtp-back-link:hover {
+    text-decoration: underline;
+    background: transparent !important;
+}
+
+@media (max-width: 860px) {
+    .gtp-login,
+    .gtp-login--wide {
+        grid-template-columns: 1fr;
+        min-height: 100vh;
+    }
+
+    .gtp-login-aside {
+        order: -1;
+        height: 220px;
+        padding: 28px 24px;
+    }
+
+    .gtp-login-aside-logo {
+        width: auto;
+        height: 100%;
+        max-height: 160px;
+        object-fit: contain;
+    }
+
+    .gtp-login-main {
+        padding: 32px 24px 40px;
+        align-items: flex-start;
+    }
+
+    .gtp-login--wide .gtp-login-main {
+        align-items: flex-start;
+    }
+
+    .gtp-login-brand {
+        margin-bottom: 24px;
+    }
+}
+
+.gtp-form-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 0;
+}
+
+.gtp-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    width: 100%;
+}
+
+.gtp-field > span {
+    font-size: 13px;
+    font-weight: 500;
+    color: #444;
+}
+
+.gtp-field input,
+.gtp-field select,
+.gtp-field textarea,
+.gtp-form-stack > input[type="text"],
+.gtp-form-stack > input[type="email"],
+.gtp-form-stack > input[type="password"],
+.gtp-form-stack > input[type="date"],
+.gtp-form-stack > input[type="time"],
+.gtp-form-stack > select,
+.gtp-form-stack > textarea {
+    width: 100%;
+    margin: 0;
+}
+
+.gtp-field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.gtp-form-actions {
+    margin-top: 4px;
+}
+
+.gtp-form-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.gtp-form-row > .gtp-field,
+.gtp-form-row > div {
+    flex: 1;
+    min-width: 140px;
+}
+
+.gtp-msg {
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.4;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.gtp-msg.is-error {
+    background: #fdecec;
+    color: #8a1f1f;
+    border: 1px solid #f0c0c0;
+}
+
+.gtp-msg.is-success {
+    background: #e6f4ea;
+    color: #137333;
+    border: 1px solid #c6e2cf;
+}
+
+.gtp-msg.is-warn {
+    background: #f0f7fb;
+    color: var(--gtp-blue-ink, #0e4f6a);
+    border: 1px solid var(--gtp-blue-soft, #d0e8f3);
+}
+
+.gtp-flash-out {
+    opacity: 0 !important;
+    transform: translateY(-6px);
+    pointer-events: none;
+}
+
+.gtp-prefs-block {
+    margin-top: 4px;
+}
+
+.gtp-prefs-heading {
+    margin: 0 0 10px;
+    font-size: 1.05rem;
+}
+
+.gtp-prefs-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--gtp-border-soft, #e2e2e2);
+    border-radius: 6px;
+}
+
+.gtp-prefs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.gtp-prefs-table th,
+.gtp-prefs-table td {
+    border-bottom: 1px solid var(--gtp-border-soft, #e2e2e2);
+    padding: 10px 12px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.gtp-prefs-table thead th {
+    background: var(--gtp-bg-soft, #f7fafc);
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.gtp-prefs-table tbody th {
+    text-align: left;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.gtp-prefs-table tr:last-child th,
+.gtp-prefs-table tr:last-child td {
+    border-bottom: 0;
+}
+
+.gtp-checklist-box {
+    margin: 0 0 4px;
+    border: 1px solid var(--gtp-border, #d8d8d8);
+    border-radius: 6px;
+    padding: 10px 12px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #fff;
+}
+
+.gtp-check-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px;
+    cursor: pointer;
+}
+
+.gtp-check-row input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+.gtp-inline-add {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.gtp-inline-add input[type="text"] {
+    flex: 1;
+    min-width: 120px;
+}
+
+.gtp-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: #fff;
+}
+
+.gtp-data-table th,
+.gtp-data-table td {
+    border: 1px solid var(--gtp-border-soft, #e2e2e2);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.gtp-data-table th {
+    background: var(--gtp-bg-soft, #f7fafc);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.gtp-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    align-items: flex-end;
+    margin: 0 0 16px;
+    padding: 14px 16px;
+    border: 1px solid var(--gtp-border, #d8d8d8);
+    border-radius: var(--gtp-radius, 8px);
+    background: #fff;
+}
+
+.gtp-filter-bar .gtp-field {
+    flex: 0 1 160px;
+}
+
+.gtp-profile-photo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 0 12px;
+    border: 1px solid var(--gtp-border, #d8d8d8);
+}
+
+/* Profile page */
+.gtp-profile-page {
+    max-width: 720px;
+}
+
+.gtp-profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.gtp-profile-card {
+    border: 1px solid var(--gtp-border, #d8d8d8);
+    border-radius: var(--gtp-radius, 8px);
+    background: #fff;
+    padding: 20px;
+}
+
+.gtp-profile-card-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 20px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--gtp-border-soft, #e2e2e2);
+}
+
+.gtp-profile-avatar.gtp-home-avatar,
+.gtp-profile-avatar-wrap .gtp-home-avatar {
+    width: 72px;
+    height: 72px;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+}
+
+.gtp-profile-card-intro h2 {
+    margin: 0 0 4px;
+    font-size: 1.1rem;
+}
+
+.gtp-profile-card-intro p {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: var(--gtp-muted, #555);
+}
+
+.gtp-profile-upload {
+    display: inline-block;
+    margin: 0;
+    cursor: pointer;
+}
+
+.gtp-profile-upload input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+}
+
+.gtp-profile-upload .button {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+}
+
+.gtp-profile-card-title {
+    margin-bottom: 14px;
+}
+
+.gtp-profile-card-title h2 {
+    margin: 0 0 4px;
+    font-size: 1.05rem;
+}
+
+.gtp-profile-card-title p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--gtp-muted, #555);
+}
+
+@media (max-width: 640px) {
+    .gtp-profile-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Site bug reports */
+.gtp-bug-report-page,
+.gtp-site-bugs-page {
+    max-width: 720px;
+}
+
+.gtp-bug-report-form {
+    max-width: 100%;
+}
+
+.gtp-bug-success {
+    margin: 8px 0 0;
+}
+
+.gtp-bug-another {
+    margin: 10px 0 0;
+    font-size: 14px;
+}
+
+.gtp-bug-another a {
+    font-weight: 600;
+    color: var(--gtp-blue, #1d7196);
+    text-decoration: none;
+}
+
+.gtp-bug-another a:hover {
+    text-decoration: underline;
+}
+
+.gtp-bug-page-pick {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.gtp-bug-page-pick legend {
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+    padding: 0;
+}
+
+.gtp-bug-page-hint {
+    font-weight: 400;
+    color: #777;
+}
+
+.gtp-bug-page-options {
+    list-style: none;
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--gtp-border, #d8d8d8);
+    border-radius: var(--gtp-radius, 8px);
+    background: #fff;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 16px;
+}
+
+.gtp-bug-page-options > li {
+    margin: 0;
+    min-width: 0;
+}
+
+.gtp-bug-page-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    margin: 0;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.3;
+    color: var(--gtp-text, #222);
+}
+
+.gtp-bug-page-option input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 1px 0 0;
+    flex-shrink: 0;
+}
+
+.gtp-bug-page-other-row {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid var(--gtp-border-soft, #e2e2e2);
+}
+
+.gtp-bug-page-other-row .gtp-bug-page-option {
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.gtp-bug-other-input {
+    flex: 1;
+    min-width: 180px;
+    display: none !important;
+    font-size: 14px;
+    padding: 8px 10px;
+    border: 1px solid var(--gtp-border, #d8d8d8);
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.gtp-bug-page-other-row.is-active .gtp-bug-other-input {
+    display: block !important;
+}
+
+@media (min-width: 700px) {
+    .gtp-bug-page-options {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.gtp-bug-section {
+    margin: 0 0 28px;
+}
+
+.gtp-bug-section h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+}
+
+.gtp-bug-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: var(--gtp-blue-soft, #d0e8f3);
+    color: var(--gtp-blue-ink, #0e4f6a);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.gtp-bug-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.gtp-bug-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    border: 1px solid var(--gtp-border-soft, #e2e2e2);
+    border-radius: var(--gtp-radius, 8px);
+    background: #fff;
+}
+
+.gtp-bug-card.is-resolved {
+    background: var(--gtp-bg-soft, #f7fafc);
+}
+
+.gtp-bug-card-main {
+    min-width: 0;
+    flex: 1;
+}
+
+.gtp-bug-card-meta {
+    margin-bottom: 6px;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.gtp-bug-desc {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--gtp-text, #222);
+}
+
+.gtp-bug-card-actions {
+    flex-shrink: 0;
+    margin: 0;
+}
+
+@media (max-width: 640px) {
+    .gtp-bug-card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* Approve registrations */
+.gtp-validate-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.gtp-validate-card {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 20px;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 14px 16px;
+    border: 1px solid var(--gtp-border, #d8d8d8);
+    border-radius: 8px;
+    background: #fff;
+}
+
+.gtp-validate-card.is-admin-request {
+    border-color: #b8d8e8;
+    background: #ecf5fb;
+}
+
+.gtp-validate-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    margin-bottom: 4px;
+}
+
+.gtp-validate-role-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #eef2f5;
+    color: #444;
+}
+
+.gtp-validate-role-pill--admin {
+    background: #d0e8f3;
+    color: #0e4f6a;
+}
+
+.gtp-validate-role-pill--tutor {
+    background: #e8f2ea;
+    color: #1a5c2e;
+}
+
+.gtp-validate-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 220px;
+}
+
+.gtp-validate-double {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.gtp-validate-double label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.gtp-validate-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}

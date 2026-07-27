@@ -22,7 +22,7 @@ function gtp_my_logged_sessions_shortcode() {
             ['id' => $session_id, 'tutor_username' => $_SESSION['gtp_user']['username']] // Ensure tutor can only edit their own sessions
         );
 
-        echo '<p style="color:green;">Session updated successfully!</p>';
+        echo '<p class="gtp-msg is-success">Session updated successfully!</p>';
     }
 
     // Display edit form
@@ -35,13 +35,14 @@ function gtp_my_logged_sessions_shortcode() {
             $students = [];
             if (!empty($attendance_ids)) {
                 $student_ids_placeholders = implode(',', array_fill(0, count($attendance_ids), '%d'));
-                $students = $wpdb->get_results($wpdb->prepare("SELECT first_name, last_name FROM {$wpdb->prefix}gtp_students WHERE id IN ($student_ids_placeholders)", $attendance_ids));
+                $students = $wpdb->get_results($wpdb->prepare("SELECT first_name, last_name, student_name FROM {$wpdb->prefix}gtp_students WHERE id IN ($student_ids_placeholders)", $attendance_ids));
             }
 
             ob_start();
             ?>
-            <div style="max-width:600px; margin:20px auto; padding:20px; background:#f9f9f9; border-radius:8px;">
-                <h2>Edit Session</h2>
+            <div class="gtp-page">
+                <?php echo gtp_dashboard_back_link('tutor'); ?>
+                <h1 class="gtp-page-title">Edit Session</h1>
                 <form method="post">
                     <input type="hidden" name="session_id" value="<?php echo $session->id; ?>">
                     <p><strong>Date:</strong> <?php echo esc_html($session->session_date); ?></p>
@@ -54,12 +55,12 @@ function gtp_my_logged_sessions_shortcode() {
                     <label>Attendance:</label>
                     <div style="margin-bottom: 10px; border: 1px solid #ccc; padding: 10px; max-height: 200px; overflow-y: auto;">
                         <?php foreach ($students as $student): ?>
-                            <p><?php echo esc_html($student->first_name . ' ' . $student->last_name); ?></p>
+                            <p><?php echo esc_html(trim(($student->first_name ?: $student->student_name) . ' ' . ($student->last_name ?: ''))); ?></p>
                         <?php endforeach; ?>
                     </div>
 
                     <input type="submit" name="gtp_update_session" value="Save Changes" class="button button-primary">
-                    <p style="margin-top: 10px;"><a href="<?php echo esc_url(remove_query_arg('edit_session')); ?>" class="button">← Back to Logged Sessions</a></p>
+                    <p style="margin-top: 10px;"><a href="<?php echo esc_url(remove_query_arg('edit_session')); ?>" class="button">My Logged Sessions</a></p>
                 </form>
             </div>
             <?php
@@ -87,60 +88,79 @@ function gtp_my_logged_sessions_shortcode() {
 
     ob_start();
     ?>
-    <div style="max-width:1000px; margin:20px auto; padding:20px; background:#f9f9f9; border-radius:8px;">
-        <h2>My Logged Sessions</h2>
-        <form method="get">
-            <input type="hidden" name="page_id" value="<?php echo get_the_ID(); ?>">
-            <label for="subject">Subject:</label>
-            <select name="subject">
-                <option value="">-- All Subjects --</option>
-                <?php foreach ($subjects as $subject): ?>
-                    <option value="<?php echo esc_attr($subject); ?>" <?php selected($selected_subject, $subject); ?>><?php echo esc_html($subject); ?></option>
-                <?php endforeach; ?>
-            </select>
-            <label for="start_date">Start Date:</label>
-            <input type="date" name="start_date" value="<?php echo esc_attr($start_date); ?>">
-            <label for="end_date">End Date:</label>
-            <input type="date" name="end_date" value="<?php echo esc_attr($end_date); ?>">
-            <input type="submit" value="Filter" class="button">
+    <div class="gtp-page">
+        <?php echo gtp_dashboard_back_link('tutor'); ?>
+        <h1 class="gtp-page-title">My logged sessions</h1>
+        <p class="gtp-page-intro">Filter and edit sessions you have logged.</p>
+
+        <form method="get" class="gtp-filter-bar">
+            <input type="hidden" name="page_id" value="<?php echo (int) get_the_ID(); ?>">
+            <label class="gtp-field">
+                <span>Subject</span>
+                <select name="subject">
+                    <option value="">All subjects</option>
+                    <?php foreach ($subjects as $subject): ?>
+                        <option value="<?php echo esc_attr($subject); ?>" <?php selected($selected_subject, $subject); ?>><?php echo esc_html($subject); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
+            <label class="gtp-field">
+                <span>Start date</span>
+                <input type="date" name="start_date" value="<?php echo esc_attr($start_date); ?>">
+            </label>
+            <label class="gtp-field">
+                <span>End date</span>
+                <input type="date" name="end_date" value="<?php echo esc_attr($end_date); ?>">
+            </label>
+            <div class="gtp-form-actions">
+                <button type="submit" class="button">Filter</button>
+            </div>
         </form>
-        <table class="wp-list-table widefat fixed striped" style="border-collapse: collapse; width: 100%;">
-            <thead>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px;">Date</th>
-                    <th style="border: 1px solid #ddd; padding: 8px;">Classroom</th>
-                    <th style="border: 1px solid #ddd; padding: 8px;">Topic</th>
-                    <th style="border: 1px solid #ddd; padding: 8px;">Comments</th>
-                    <th style="border: 1px solid #ddd; padding: 8px;">Attendance</th>
-                    <th style="border: 1px solid #ddd; padding: 8px;">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($sessions as $session): ?>
-                    <?php
-                    $attendance_ids = json_decode($session->attendance);
-                    $students = [];
-                    if (!empty($attendance_ids)) {
-                        $student_ids_placeholders = implode(',', array_fill(0, count($attendance_ids), '%d'));
-                        $students = $wpdb->get_results($wpdb->prepare("SELECT first_name, last_name FROM {$wpdb->prefix}gtp_students WHERE id IN ($student_ids_placeholders)", $attendance_ids));
-                    }
-                    ?>
+
+        <div class="gtp-checkin-table-wrap">
+            <table class="gtp-data-table">
+                <thead>
                     <tr>
-                        <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($session->session_date); ?></td>
-                        <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($session->subject . ', ' . $session->school . ' - ' . $session->teacher_name); ?></td>
-                        <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($session->topic); ?></td>
-                        <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($session->comments); ?></td>
-                        <td style="border: 1px solid #ddd; padding: 8px;">
-                            <?php foreach ($students as $student): ?>
-                                <?php echo esc_html($student->first_name . ' ' . $student->last_name); ?><br>
-                            <?php endforeach; ?>
-                        </td>
-                        <td style="border: 1px solid #ddd; padding: 8px;"><a href="<?php echo esc_url(add_query_arg('edit_session', $session->id)); ?>" class="button">Edit</a></td>
+                        <th>Date</th>
+                        <th>Classroom</th>
+                        <th>Topic</th>
+                        <th>Comments</th>
+                        <th>Attendance</th>
+                        <th></th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-        <p style="margin-top: 20px;"><a href="<?php echo esc_url(site_url('/index.php/ta-dashboard/')); ?>" class="button">← Back to Dashboard</a></p>
+                </thead>
+                <tbody>
+                    <?php if (empty($sessions)) : ?>
+                        <tr>
+                            <td colspan="6">No sessions found for these filters.</td>
+                        </tr>
+                    <?php else : ?>
+                        <?php foreach ($sessions as $session): ?>
+                            <?php
+                            $attendance_ids = json_decode($session->attendance);
+                            $students = [];
+                            if (!empty($attendance_ids)) {
+                                $student_ids_placeholders = implode(',', array_fill(0, count($attendance_ids), '%d'));
+                                $students = $wpdb->get_results($wpdb->prepare("SELECT first_name, last_name, student_name FROM {$wpdb->prefix}gtp_students WHERE id IN ($student_ids_placeholders)", $attendance_ids));
+                            }
+                            ?>
+                            <tr>
+                                <td><?php echo esc_html($session->session_date); ?></td>
+                                <td><?php echo esc_html($session->subject . ', ' . $session->school . ' - ' . $session->teacher_name); ?></td>
+                                <td><?php echo esc_html($session->topic); ?></td>
+                                <td><?php echo esc_html($session->comments); ?></td>
+                                <td>
+                                    <?php foreach ($students as $student): ?>
+                                        <?php echo esc_html(trim(($student->first_name ?: $student->student_name) . ' ' . ($student->last_name ?: ''))); ?><br>
+                                    <?php endforeach; ?>
+                                </td>
+                                <td><a href="<?php echo esc_url(add_query_arg('edit_session', $session->id)); ?>" class="button">Edit</a></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
     <?php
     return ob_get_clean();
