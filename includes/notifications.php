@@ -213,7 +213,6 @@ function gtp_email_notifications_toggle_html($enabled) {
         <label class="gtp-toggle-row">
             <input type="checkbox" name="email_notifications" value="1" <?php checked($enabled); ?>>
             <span>Email notifications</span>
-            <em><?php echo $enabled ? 'On' : 'Off'; ?> </em>
         </label>
     </section>
     <?php
