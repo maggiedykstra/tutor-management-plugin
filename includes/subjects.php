@@ -548,6 +548,9 @@ function gtp_manage_subjects_shortcode() {
         return '<p>You do not have access to this page.</p>';
     }
 
+    if (!function_exists('dbDelta')) {
+        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+    }
     gtp_create_subjects_table();
     gtp_seed_default_subjects();
 
