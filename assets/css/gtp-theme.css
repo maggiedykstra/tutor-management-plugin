@@ -1361,6 +1361,86 @@ a.gtp-login-submit:hover {
     }
 }
 
+.gtp-subject-field {
+    margin: 0 0 10px;
+}
+
+.gtp-subject-field .gtp-subject-select {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.gtp-new-subject-wrap {
+    margin-top: 8px;
+}
+
+.gtp-new-subject-wrap .gtp-field {
+    margin: 0;
+}
+
+.gtp-new-subject-input {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.gtp-subject-manage-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.gtp-subject-manage-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+}
+
+.gtp-subject-manage-form input[type="text"] {
+    flex: 1;
+    min-width: 160px;
+    padding: 8px 10px;
+    border: 1px solid var(--gtp-border, #d8d8d8);
+    border-radius: 6px;
+}
+
+.gtp-email-notify-card {
+    margin-top: 8px;
+}
+
+.gtp-toggle-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 0;
+    padding: 10px 0 0;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.gtp-toggle-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+.gtp-toggle-row span {
+    font-weight: 600;
+    color: #222;
+}
+
+.gtp-toggle-row em {
+    font-style: normal;
+    color: #666;
+    font-size: 13px;
+}
+
 /* Approve registrations */
 .gtp-validate-list {
     list-style: none;

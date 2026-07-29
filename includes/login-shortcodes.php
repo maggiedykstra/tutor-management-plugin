@@ -49,7 +49,7 @@ function gtp_login_shortcode() {
     <div class="gtp-login">
         <div class="gtp-login-main">
             <div class="gtp-login-main-inner">
-                <h1>Welcome back</h1>
+                <h1>Welcome Back</h1>
                 <p class="gtp-login-sub">Please enter your details</p>
                 <?php echo $message; ?>
 

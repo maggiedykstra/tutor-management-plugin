@@ -4,17 +4,16 @@
  */
 
 function gtp_spreadsheet_subject_choices() {
-    return [
-        'Biology' => ['Biology', 'AP Biology'],
-        'CSP' => ['CSP', 'AP Computer Science Principles', 'Computer Science Principles', 'AP CSP'],
-        'Physics' => ['Physics', 'AP Physics', 'AP Physics 1', 'AP Physics 2'],
-        'Statistics' => ['Statistics', 'AP Statistics'],
-    ];
+    // Keys are the selectable subjects; values are SQL match variants (canonical + legacy).
+    $choices = [];
+    foreach (gtp_get_subjects() as $subject) {
+        $choices[$subject] = gtp_subject_match_values($subject);
+    }
+    return $choices;
 }
 
 function gtp_spreadsheet_subjects_for_choice($choice) {
-    $map = gtp_spreadsheet_subject_choices();
-    return $map[$choice] ?? [$choice];
+    return gtp_subject_match_values($choice);
 }
 
 function gtp_spreadsheet_student_display_name($student) {

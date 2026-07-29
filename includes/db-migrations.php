@@ -32,6 +32,25 @@ function gtp_migrate_users_table() {
     if (!$wpdb->get_var("SHOW COLUMNS FROM $table LIKE 'requested_role'")) {
         $wpdb->query("ALTER TABLE $table ADD requested_role VARCHAR(20) NOT NULL DEFAULT 'tutor' AFTER role");
     }
+
+    // Email notifications preference (default ON)
+    if (!$wpdb->get_var("SHOW COLUMNS FROM $table LIKE 'email_notifications'")) {
+        $wpdb->query("ALTER TABLE $table ADD email_notifications TINYINT(1) NOT NULL DEFAULT 1 AFTER password_set");
+    }
+
+    // Last month we emailed a check-in reminder (YYYY-MM)
+    if (!$wpdb->get_var("SHOW COLUMNS FROM $table LIKE 'checkin_notified_month'")) {
+        $wpdb->query("ALTER TABLE $table ADD checkin_notified_month VARCHAR(7) DEFAULT NULL AFTER email_notifications");
+    }
+}
+
+function gtp_migrate_announcements_table() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'gtp_announcements';
+
+    if (!$wpdb->get_var("SHOW COLUMNS FROM $table LIKE 'emailed_at'")) {
+        $wpdb->query("ALTER TABLE $table ADD emailed_at datetime DEFAULT NULL AFTER send_at");
+    }
 }
 
 function gtp_migrate_classrooms_table() {

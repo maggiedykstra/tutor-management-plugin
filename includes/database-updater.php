@@ -35,6 +35,8 @@ function gtp_update_db_schema() {
         gtp_create_school_years_table();
         gtp_create_semesters_table();
         gtp_create_site_bugs_table();
+        gtp_create_subjects_table();
+        gtp_seed_default_subjects();
 
         // Apply incremental schema updates
         gtp_migrate_users_table();
@@ -43,6 +45,8 @@ function gtp_update_db_schema() {
         gtp_migrate_students_table();
         gtp_migrate_sessions_table();
         gtp_migrate_semester_columns();
+        gtp_migrate_subject_catalog();
+        gtp_migrate_announcements_table();
 
         update_option('gtp_db_version', GTP_DB_VERSION);
     }

@@ -67,6 +67,7 @@ function gtp_admin_dashboard_shortcode() {
                 <a href="<?php echo esc_url(site_url('/index.php/admin-checkins/')); ?>">Tutor Check-ins<?php echo $low_checkins ? ' (' . $low_checkins . ')' : ''; ?></a>
                 <a href="<?php echo esc_url(site_url('/index.php/tutor-resources/')); ?>">Tutor Resources</a>
                 <a href="<?php echo esc_url(site_url('/index.php/manage-semesters/')); ?>">Semesters</a>
+                <a href="<?php echo esc_url(site_url('/index.php/manage-subjects/')); ?>">Subjects</a>
                 <a href="<?php echo esc_url(site_url('/index.php/site-bugs/')); ?>">Site Bugs</a>
                 <a href="<?php echo esc_url(site_url('/index.php/add-classroom')); ?>">Add Classroom</a>
                 <a href="<?php echo esc_url(site_url('/index.php/validate-tas')); ?>">Approve registrations<?php echo $pending_count ? ' (' . $pending_count . ')' : ''; ?></a>
@@ -181,6 +182,7 @@ function gtp_admin_profile_shortcode() {
                 'last_name' => sanitize_text_field($_POST['last_name'] ?? ''),
                 'email' => sanitize_email($_POST['email'] ?? ''),
                 'bio' => sanitize_textarea_field($_POST['bio'] ?? ''),
+                'email_notifications' => !empty($_POST['email_notifications']) ? 1 : 0,
             ];
 
             if ($update_data['first_name'] === '' || $update_data['last_name'] === '') {
@@ -273,6 +275,8 @@ function gtp_admin_profile_shortcode() {
                 <textarea id="gtp_admin_bio" name="bio" rows="6" style="width:100%; max-width:520px; padding:8px;"><?php echo esc_textarea($admin->bio); ?></textarea>
             </p>
 
+            <?php echo gtp_email_notifications_toggle_html(isset($admin->email_notifications) ? $admin->email_notifications : 1); ?>
+
             <p>
                 <button type="submit" name="gtp_update_admin_profile" class="button button-primary">Save Profile</button>
             </p>
@@ -299,7 +303,8 @@ function gtp_add_classroom_shortcode() {
     // Handle form submission
     if (isset($_POST['gtp_add_classroom'])) {
         $school = sanitize_text_field($_POST['school']);
-        $subject = sanitize_text_field($_POST['subject']);
+        $resolved = gtp_resolve_subject_from_post($_POST, 'subject', 'new_subject');
+        $subject = $resolved['subject'] ?? '';
         $teacher_first_name = sanitize_text_field($_POST['teacher_first_name']);
         $teacher_last_name = sanitize_text_field($_POST['teacher_last_name']);
         $teacher_email = sanitize_email($_POST['teacher_email']);
@@ -310,12 +315,9 @@ function gtp_add_classroom_shortcode() {
         $roster = sanitize_textarea_field($_POST['roster']);
         $tutor_id = isset($_POST['tutor_id']) ? intval($_POST['tutor_id']) : 0;
 
-        // If "Other" is selected, override with custom subject
-        if ($subject === 'Other' && !empty($_POST['custom_subject'])) {
-            $subject = sanitize_text_field($_POST['custom_subject']);
-        }
-
-        if ($school && $subject && $teacher_first_name && $teacher_last_name) {
+        if (!empty($resolved['error'])) {
+            $message = '<p class="gtp-msg is-error gtp-persist">' . esc_html($resolved['error']) . '</p>';
+        } elseif ($school && $subject && $teacher_first_name && $teacher_last_name) {
             $wpdb->insert(
                 $wpdb->prefix . 'gtp_classrooms',
                 [
@@ -408,36 +410,17 @@ function gtp_add_classroom_shortcode() {
             <input type="text" name="school" required style="width:100%; padding:8px; margin-bottom:10px;">
 
             <label>Subject:</label>
-            <select name="subject" id="subject-select" required style="width:100%; padding:8px; margin-bottom:10px;">
-                <option value="">-- Select Subject --</option>
-                <option value="Statistics">AP Statistics</option>
-                <option value="CSP">AP CSP</option>
-                <option value="Biology">AP Biology</option>
-                <option value="Physics">AP Physics</option>
-                <option value="Other">Other</option>
-            </select>
+            <?php
+            echo gtp_render_subject_select([
+                'name' => 'subject',
+                'id' => 'gtp-add-classroom-subject',
+                'required' => true,
+                'allow_add' => true,
+                'empty_label' => '-- Select Subject --',
+            ]);
+            echo gtp_subject_select_script();
+            ?>
 
-        <div id="custom-subject-wrapper" style="display:none; margin-top:10px;">
-            <label>Other Subject:</label>
-            <input type="text" name="custom_subject" id="custom-subject-input" style="width:100%; padding:8px;">
-        </div>
-            <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const subjectSelect = document.getElementById('subject-select');
-                const customWrapper = document.getElementById('custom-subject-wrapper');
-                const customInput = document.getElementById('custom-subject-input');
-
-                subjectSelect.addEventListener('change', function () {
-                    if (this.value === 'Other') {
-                        customWrapper.style.display = 'block';
-                        customInput.required = true;
-                    } else {
-                        customWrapper.style.display = 'none';
-                        customInput.required = false;
-                    }
-                });
-            });
-            </script>
             <label>Teacher First Name:</label>
             <input type="text" name="teacher_first_name" required style="width:100%; padding:8px; margin-bottom:10px;">
             

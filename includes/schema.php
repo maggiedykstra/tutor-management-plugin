@@ -23,6 +23,8 @@ function gtp_create_users_table() {
         requested_role varchar(20) NOT NULL DEFAULT 'tutor',
         validated TINYINT(1) DEFAULT 0,
         password_set TINYINT(1) NOT NULL DEFAULT 1,
+        email_notifications TINYINT(1) NOT NULL DEFAULT 1,
+        checkin_notified_month varchar(7) DEFAULT NULL,
         PRIMARY KEY  (id)
     ) $charset;";
 
@@ -63,6 +65,7 @@ function gtp_create_announcements_table() {
         audience_json longtext NOT NULL,
         audience_label text,
         send_at datetime NOT NULL,
+        emailed_at datetime DEFAULT NULL,
         created_at datetime NOT NULL,
         PRIMARY KEY  (id),
         KEY send_at (send_at),

@@ -41,6 +41,7 @@ function gtp_plugin_page_slugs() {
         'reports',
         'report-site-bug',
         'site-bugs',
+        'manage-subjects',
     ];
 }
 
@@ -84,6 +85,7 @@ function gtp_plugin_page_titles() {
         'report-site-bug' => 'Report Site Bug',
         'site-bugs' => 'Site Bugs',
         'validate-tas' => 'Approve Registrations',
+        'manage-subjects' => 'Manage Subjects',
     ];
 }
 
@@ -122,6 +124,7 @@ function gtp_create_required_pages() {
         'reports'             => '<!-- wp:shortcode -->[gtp_reports]<!-- /wp:shortcode -->',
         'report-site-bug'     => '<!-- wp:shortcode -->[gtp_report_site_bug]<!-- /wp:shortcode -->',
         'site-bugs'           => '<!-- wp:shortcode -->[gtp_site_bugs]<!-- /wp:shortcode -->',
+        'manage-subjects'     => '<!-- wp:shortcode -->[gtp_manage_subjects]<!-- /wp:shortcode -->',
     ];
 
     $titles = gtp_plugin_page_titles();
@@ -216,7 +219,7 @@ function gtp_enqueue_plugin_page_chrome_css() {
         'gtp-theme',
         plugins_url('assets/css/gtp-theme.css', dirname(__DIR__) . '/tutor-management-plugin.php'),
         [],
-        '3.3'
+        '3.5'
     );
 
     wp_enqueue_script(

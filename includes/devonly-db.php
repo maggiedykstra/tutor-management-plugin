@@ -76,13 +76,13 @@ function gtp_insert_sample_classrooms_and_assignments() {
     $sample_classrooms = [
         [
             'school' => 'Greenville High',
-            'subject' => 'Biology',
+            'subject' => 'AP Biology',
             'teacher_first_name' => 'Mrs.',
             'teacher_last_name' => 'Frizzle'
         ],
         [
             'school' => 'Riverdale Academy',
-            'subject' => 'Algebra',
+            'subject' => 'AP Statistics',
               'teacher_first_name' => 'Mr.',
             'teacher_last_name' => 'Baxter'
         ]

@@ -4,17 +4,11 @@
  */
 
 function gtp_announcement_subject_choices() {
-    if (function_exists('gtp_spreadsheet_subject_choices')) {
-        return array_keys(gtp_spreadsheet_subject_choices());
-    }
-    return ['Biology', 'CSP', 'Physics', 'Statistics'];
+    return gtp_get_subjects();
 }
 
 function gtp_announcement_subjects_for_choice($choice) {
-    if (function_exists('gtp_spreadsheet_subjects_for_choice')) {
-        return gtp_spreadsheet_subjects_for_choice($choice);
-    }
-    return [$choice];
+    return gtp_subject_match_values($choice);
 }
 
 /**
@@ -279,7 +273,7 @@ function gtp_user_avatar_html($user, $class = 'gtp-home-avatar') {
 }
 
 /**
- * Admin manage page: create announcements + list previous.
+ * Admin manage page: create / edit / delete announcements + list previous.
  */
 function gtp_manage_announcements_shortcode() {
     if (!isset($_SESSION['gtp_user']) || $_SESSION['gtp_user']['role'] !== 'admin') {
@@ -288,17 +282,53 @@ function gtp_manage_announcements_shortcode() {
 
     global $wpdb;
     $message = '';
+    if (!empty($_SESSION['gtp_announcement_flash'])) {
+        $message = $_SESSION['gtp_announcement_flash'];
+        unset($_SESSION['gtp_announcement_flash']);
+    }
     $author_id = (int) $_SESSION['gtp_user']['id'];
+    $table = $wpdb->prefix . 'gtp_announcements';
+    $recipients_table = $wpdb->prefix . 'gtp_announcement_recipients';
     $schools = $wpdb->get_col("SELECT DISTINCT school FROM {$wpdb->prefix}gtp_classrooms WHERE school IS NOT NULL AND school <> '' ORDER BY school ASC");
     $subject_choices = gtp_announcement_subject_choices();
+    $manage_url = site_url('/index.php/manage-announcements/');
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['gtp_create_announcement'])) {
-        if (!isset($_POST['gtp_announcement_nonce']) || !wp_verify_nonce($_POST['gtp_announcement_nonce'], 'gtp_create_announcement')) {
+    // Delete
+    if (isset($_POST['gtp_delete_announcement']) && check_admin_referer('gtp_delete_announcement_' . (int) ($_POST['announcement_id'] ?? 0), 'gtp_announcement_nonce')) {
+        $delete_id = (int) ($_POST['announcement_id'] ?? 0);
+        if ($delete_id > 0) {
+            $wpdb->delete($recipients_table, ['announcement_id' => $delete_id]);
+            $wpdb->delete($table, ['id' => $delete_id]);
+            $_SESSION['gtp_announcement_flash'] = '<p class="gtp-msg is-success">Announcement deleted.</p>';
+            wp_safe_redirect($manage_url);
+            exit;
+        }
+    }
+
+    $editing = null;
+    $edit_id = isset($_GET['edit_id']) ? (int) $_GET['edit_id'] : 0;
+    if ($edit_id > 0) {
+        $editing = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $edit_id));
+        if (!$editing) {
+            $message = '<p class="gtp-msg is-error gtp-persist">Announcement not found.</p>';
+            $edit_id = 0;
+        }
+    }
+
+    // Create or update
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['gtp_create_announcement']) || isset($_POST['gtp_update_announcement']))) {
+        $is_update = isset($_POST['gtp_update_announcement']);
+        $nonce_action = $is_update
+            ? 'gtp_update_announcement_' . (int) ($_POST['announcement_id'] ?? 0)
+            : 'gtp_create_announcement';
+
+        if (!isset($_POST['gtp_announcement_nonce']) || !wp_verify_nonce($_POST['gtp_announcement_nonce'], $nonce_action)) {
             $message = '<p class="gtp-msg is-error gtp-persist">Security check failed. Please try again.</p>';
         } else {
             $title = sanitize_text_field($_POST['title'] ?? '');
             $body = sanitize_textarea_field($_POST['body'] ?? '');
             $send_mode = sanitize_text_field($_POST['send_mode'] ?? 'now');
+            $update_id = $is_update ? (int) ($_POST['announcement_id'] ?? 0) : 0;
 
             $audience = [
                 'everyone' => !empty($_POST['audience_everyone']),
@@ -319,6 +349,7 @@ function gtp_manage_announcements_shortcode() {
             ) {
                 $message = '<p class="gtp-msg is-error gtp-persist">Select at least one audience option.</p>';
             } else {
+                $send_at = null;
                 if ($send_mode === 'schedule') {
                     $raw = sanitize_text_field($_POST['send_at'] ?? '');
                     $ts = strtotime($raw);
@@ -331,38 +362,78 @@ function gtp_manage_announcements_shortcode() {
                     $send_at = current_time('mysql');
                 }
 
-                if ($message === '') {
+                if ($message === '' && $send_at) {
                     $recipient_ids = gtp_resolve_announcement_recipients($audience);
                     if (empty($recipient_ids)) {
                         $message = '<p class="gtp-msg is-error gtp-persist">No matching recipients found for that audience.</p>';
                     } else {
                         $label = gtp_format_announcement_audience_label($audience);
-                        $inserted = $wpdb->insert(
-                            $wpdb->prefix . 'gtp_announcements',
-                            [
-                                'author_id' => $author_id,
-                                'title' => $title,
-                                'body' => $body,
-                                'audience_json' => wp_json_encode($audience),
-                                'audience_label' => $label,
-                                'send_at' => $send_at,
-                                'created_at' => current_time('mysql'),
-                            ]
-                        );
+                        $payload = [
+                            'title' => $title,
+                            'body' => $body,
+                            'audience_json' => wp_json_encode($audience),
+                            'audience_label' => $label,
+                            'send_at' => $send_at,
+                        ];
 
-                        if ($inserted) {
-                            $announcement_id = (int) $wpdb->insert_id;
-                            gtp_save_announcement_recipients($announcement_id, $recipient_ids);
-                            $when = ($send_mode === 'schedule')
-                                ? 'Scheduled for ' . date('M j, Y g:i A', strtotime($send_at))
-                                : 'Sent now';
-                            $message = '<p class="gtp-msg is-success">Announcement saved. '
-                                . esc_html($when)
-                                . ' to '
-                                . count($recipient_ids)
-                                . ' recipient(s).</p>';
+                        if ($is_update && $update_id > 0) {
+                            $existing = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $update_id));
+                            if (!$existing) {
+                                $message = '<p class="gtp-msg is-error gtp-persist">Announcement not found.</p>';
+                            } else {
+                                // If still scheduled / not emailed, keep emailed_at null so emails go out at send time.
+                                // If already emailed, do not re-send on edit.
+                                $already_emailed = !empty($existing->emailed_at);
+                                $wpdb->update($table, $payload, ['id' => $update_id]);
+                                if (!$already_emailed) {
+                                    $wpdb->query($wpdb->prepare(
+                                        "UPDATE $table SET emailed_at = NULL WHERE id = %d",
+                                        $update_id
+                                    ));
+                                }
+                                $wpdb->delete($recipients_table, ['announcement_id' => $update_id]);
+                                gtp_save_announcement_recipients($update_id, $recipient_ids);
+
+                                if (!$already_emailed && $send_at <= current_time('mysql')) {
+                                    gtp_email_announcement_recipients($update_id);
+                                }
+
+                                $when = ($send_mode === 'schedule' && $send_at > current_time('mysql'))
+                                    ? 'Scheduled for ' . date('M j, Y g:i A', strtotime($send_at))
+                                    : 'Visible now';
+                                $message = '<p class="gtp-msg is-success">Announcement updated. '
+                                    . esc_html($when)
+                                    . ' · '
+                                    . count($recipient_ids)
+                                    . ' recipient(s).</p>';
+                                $_SESSION['gtp_announcement_flash'] = $message;
+                                wp_safe_redirect($manage_url);
+                                exit;
+                            }
                         } else {
-                            $message = '<p class="gtp-msg is-error">Could not save announcement: ' . esc_html($wpdb->last_error) . '</p>';
+                            $payload['author_id'] = $author_id;
+                            $payload['created_at'] = current_time('mysql');
+
+                            $inserted = $wpdb->insert($table, $payload);
+                            if ($inserted) {
+                                $announcement_id = (int) $wpdb->insert_id;
+                                gtp_save_announcement_recipients($announcement_id, $recipient_ids);
+
+                                if ($send_at <= current_time('mysql')) {
+                                    gtp_email_announcement_recipients($announcement_id);
+                                }
+
+                                $when = ($send_mode === 'schedule' && $send_at > current_time('mysql'))
+                                    ? 'Scheduled for ' . date('M j, Y g:i A', strtotime($send_at))
+                                    : 'Sent now';
+                                $message = '<p class="gtp-msg is-success">Announcement saved. '
+                                    . esc_html($when)
+                                    . ' to '
+                                    . count($recipient_ids)
+                                    . ' recipient(s). Recipients with email notifications on were emailed.</p>';
+                            } else {
+                                $message = '<p class="gtp-msg is-error">Could not save announcement: ' . esc_html($wpdb->last_error) . '</p>';
+                            }
                         }
                     }
                 }
@@ -370,11 +441,41 @@ function gtp_manage_announcements_shortcode() {
         }
     }
 
+    // Reload editing row after failed update attempts
+    if ($edit_id > 0 && !$editing) {
+        $editing = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $edit_id));
+    }
+
+    $form_audience = [
+        'everyone' => false,
+        'all_tutors' => false,
+        'all_admins' => false,
+        'subjects' => [],
+        'schools' => [],
+    ];
+    $form_title = '';
+    $form_body = '';
+    $form_send_mode = 'now';
+    $form_send_at = '';
+
+    if ($editing) {
+        $form_title = $editing->title;
+        $form_body = $editing->body;
+        $decoded = json_decode((string) $editing->audience_json, true);
+        if (is_array($decoded)) {
+            $form_audience = array_merge($form_audience, $decoded);
+        }
+        if ($editing->send_at > current_time('mysql')) {
+            $form_send_mode = 'schedule';
+            $form_send_at = date('Y-m-d\TH:i', strtotime($editing->send_at));
+        }
+    }
+
     $previous = $wpdb->get_results(
         "SELECT a.*,
-                (SELECT COUNT(*) FROM {$wpdb->prefix}gtp_announcement_recipients r WHERE r.announcement_id = a.id) AS recipient_count,
-                (SELECT COUNT(*) FROM {$wpdb->prefix}gtp_announcement_recipients r WHERE r.announcement_id = a.id AND r.read_at IS NOT NULL) AS read_count
-         FROM {$wpdb->prefix}gtp_announcements a
+                (SELECT COUNT(*) FROM $recipients_table r WHERE r.announcement_id = a.id) AS recipient_count,
+                (SELECT COUNT(*) FROM $recipients_table r WHERE r.announcement_id = a.id AND r.read_at IS NOT NULL) AS read_count
+         FROM $table a
          ORDER BY a.created_at DESC, a.id DESC"
     );
 
@@ -388,35 +489,49 @@ function gtp_manage_announcements_shortcode() {
         <h1 class="gtp-page-title">Announcements</h1>
         <?php echo $message; ?>
 
-        <h3>New Announcement</h3>
+        <h3><?php echo $editing ? 'Edit Announcement' : 'New Announcement'; ?></h3>
+        <?php if ($editing) : ?>
+            <p class="gtp-people-muted" style="margin-top:-6px;">
+                Editing #<?php echo (int) $editing->id; ?>.
+                <a href="<?php echo esc_url($manage_url); ?>">Cancel edit</a>
+            </p>
+        <?php endif; ?>
+
         <form method="post" class="gtp-announcement-form">
-            <?php wp_nonce_field('gtp_create_announcement', 'gtp_announcement_nonce'); ?>
+            <?php if ($editing) :
+                wp_nonce_field('gtp_update_announcement_' . (int) $editing->id, 'gtp_announcement_nonce');
+                ?>
+                <input type="hidden" name="announcement_id" value="<?php echo (int) $editing->id; ?>">
+            <?php else :
+                wp_nonce_field('gtp_create_announcement', 'gtp_announcement_nonce');
+            endif; ?>
 
             <p>
                 <label for="gtp_ann_title"><strong>Title</strong></label><br>
-                <input type="text" id="gtp_ann_title" name="title" required style="width:100%; max-width:640px; padding:8px;">
+                <input type="text" id="gtp_ann_title" name="title" required value="<?php echo esc_attr($form_title); ?>" style="width:100%; max-width:640px; padding:8px;">
             </p>
             <p>
                 <label for="gtp_ann_body"><strong>Message</strong></label><br>
-                <textarea id="gtp_ann_body" name="body" rows="6" required style="width:100%; max-width:640px; padding:8px;"></textarea>
+                <textarea id="gtp_ann_body" name="body" rows="6" required style="width:100%; max-width:640px; padding:8px;"><?php echo esc_textarea($form_body); ?></textarea>
             </p>
 
             <fieldset style="border:1px solid #ccc; padding:12px 16px; margin:16px 0; max-width:640px;">
                 <legend><strong>Send to</strong></legend>
                 <label style="display:block; margin-bottom:6px;">
-                    <input type="checkbox" name="audience_everyone" value="1" id="gtp_aud_everyone"> Everyone
+                    <input type="checkbox" name="audience_everyone" value="1" id="gtp_aud_everyone" <?php checked(!empty($form_audience['everyone'])); ?>> Everyone
                 </label>
                 <label style="display:block; margin-bottom:6px;">
-                    <input type="checkbox" name="audience_all_tutors" value="1" class="gtp-aud-opt"> All tutors
+                    <input type="checkbox" name="audience_all_tutors" value="1" class="gtp-aud-opt" <?php checked(!empty($form_audience['all_tutors'])); ?>> All tutors
                 </label>
                 <label style="display:block; margin-bottom:10px;">
-                    <input type="checkbox" name="audience_all_admins" value="1" class="gtp-aud-opt"> All admins
+                    <input type="checkbox" name="audience_all_admins" value="1" class="gtp-aud-opt" <?php checked(!empty($form_audience['all_admins'])); ?>> All admins
                 </label>
 
                 <p style="margin:8px 0 4px;"><strong>Tutors in subjects</strong></p>
                 <?php foreach ($subject_choices as $choice) : ?>
                     <label style="display:inline-block; margin:0 14px 8px 0;">
-                        <input type="checkbox" name="audience_subjects[]" value="<?php echo esc_attr($choice); ?>" class="gtp-aud-opt">
+                        <input type="checkbox" name="audience_subjects[]" value="<?php echo esc_attr($choice); ?>" class="gtp-aud-opt"
+                            <?php checked(in_array($choice, (array) ($form_audience['subjects'] ?? []), true)); ?>>
                         <?php echo esc_html($choice); ?>
                     </label>
                 <?php endforeach; ?>
@@ -427,7 +542,8 @@ function gtp_manage_announcements_shortcode() {
                 <?php else : ?>
                     <?php foreach ($schools as $school) : ?>
                         <label style="display:block; margin-bottom:4px;">
-                            <input type="checkbox" name="audience_schools[]" value="<?php echo esc_attr($school); ?>" class="gtp-aud-opt">
+                            <input type="checkbox" name="audience_schools[]" value="<?php echo esc_attr($school); ?>" class="gtp-aud-opt"
+                                <?php checked(in_array($school, (array) ($form_audience['schools'] ?? []), true)); ?>>
                             <?php echo esc_html($school); ?>
                         </label>
                     <?php endforeach; ?>
@@ -437,25 +553,29 @@ function gtp_manage_announcements_shortcode() {
             <fieldset style="border:1px solid #ccc; padding:12px 16px; margin:16px 0; max-width:640px;">
                 <legend><strong>When to send</strong></legend>
                 <label style="display:block; margin-bottom:8px;">
-                    <input type="radio" name="send_mode" value="now" checked> Send now
+                    <input type="radio" name="send_mode" value="now" <?php checked($form_send_mode, 'now'); ?>> Send now
                 </label>
                 <label style="display:block; margin-bottom:8px;">
-                    <input type="radio" name="send_mode" value="schedule" id="gtp_send_schedule"> Schedule for later
+                    <input type="radio" name="send_mode" value="schedule" id="gtp_send_schedule" <?php checked($form_send_mode, 'schedule'); ?>> Schedule for later
                 </label>
-                <p id="gtp_schedule_fields" style="display:none; margin:8px 0 0;">
+                <p id="gtp_schedule_fields" style="<?php echo $form_send_mode === 'schedule' ? '' : 'display:none;'; ?> margin:8px 0 0;">
                     <label for="gtp_send_at">Date &amp; time</label><br>
-                    <input type="datetime-local" id="gtp_send_at" name="send_at" step="60">
+                    <input type="datetime-local" id="gtp_send_at" name="send_at" step="60" value="<?php echo esc_attr($form_send_at); ?>">
                 </p>
             </fieldset>
 
             <p>
-                <button type="submit" name="gtp_create_announcement" class="button button-primary">Create Announcement</button>
+                <?php if ($editing) : ?>
+                    <button type="submit" name="gtp_update_announcement" value="1" class="button button-primary">Save changes</button>
+                    <a class="button" href="<?php echo esc_url($manage_url); ?>">Cancel</a>
+                <?php else : ?>
+                    <button type="submit" name="gtp_create_announcement" class="button button-primary">Create Announcement</button>
+                <?php endif; ?>
             </p>
         </form>
 
         <script>
         (function () {
-            const scheduleRadio = document.getElementById('gtp_send_schedule');
             const scheduleFields = document.getElementById('gtp_schedule_fields');
             const sendAt = document.getElementById('gtp_send_at');
             const everyone = document.getElementById('gtp_aud_everyone');
@@ -473,14 +593,17 @@ function gtp_manage_announcements_shortcode() {
             });
             toggleSchedule();
 
+            function syncEveryone() {
+                if (!everyone) return;
+                if (everyone.checked) {
+                    opts.forEach(function (cb) { cb.checked = false; cb.disabled = true; });
+                } else {
+                    opts.forEach(function (cb) { cb.disabled = false; });
+                }
+            }
             if (everyone) {
-                everyone.addEventListener('change', function () {
-                    if (everyone.checked) {
-                        opts.forEach(function (cb) { cb.checked = false; cb.disabled = true; });
-                    } else {
-                        opts.forEach(function (cb) { cb.disabled = false; });
-                    }
-                });
+                everyone.addEventListener('change', syncEveryone);
+                syncEveryone();
             }
         })();
         </script>
@@ -499,12 +622,16 @@ function gtp_manage_announcements_shortcode() {
                             <th style="border:1px solid #ccc; padding:8px; background:#f2f2f2; text-align:left;">Status</th>
                             <th style="border:1px solid #ccc; padding:8px; background:#f2f2f2; text-align:left;">Recipients</th>
                             <th style="border:1px solid #ccc; padding:8px; background:#f2f2f2; text-align:left;">Read</th>
+                            <th style="border:1px solid #ccc; padding:8px; background:#f2f2f2; text-align:left;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($previous as $row) :
                             $is_future = $row->send_at > $now;
                             $status = $is_future ? 'Scheduled' : 'Sent';
+                            if (!$is_future && empty($row->emailed_at)) {
+                                $status .= ' (email pending)';
+                            }
                             ?>
                             <tr>
                                 <td style="border:1px solid #ccc; padding:8px; vertical-align:top;">
@@ -516,6 +643,14 @@ function gtp_manage_announcements_shortcode() {
                                 <td style="border:1px solid #ccc; padding:8px; vertical-align:top;"><?php echo esc_html($status); ?></td>
                                 <td style="border:1px solid #ccc; padding:8px; vertical-align:top;"><?php echo (int) $row->recipient_count; ?></td>
                                 <td style="border:1px solid #ccc; padding:8px; vertical-align:top;"><?php echo (int) $row->read_count; ?> / <?php echo (int) $row->recipient_count; ?></td>
+                                <td style="border:1px solid #ccc; padding:8px; vertical-align:top; white-space:nowrap;">
+                                    <a class="button" href="<?php echo esc_url(add_query_arg('edit_id', (int) $row->id, $manage_url)); ?>">Edit</a>
+                                    <form method="post" style="display:inline;" onsubmit="return confirm('Delete this announcement?');">
+                                        <?php wp_nonce_field('gtp_delete_announcement_' . (int) $row->id, 'gtp_announcement_nonce'); ?>
+                                        <input type="hidden" name="announcement_id" value="<?php echo (int) $row->id; ?>">
+                                        <button type="submit" name="gtp_delete_announcement" value="1" class="button">Delete</button>
+                                    </form>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

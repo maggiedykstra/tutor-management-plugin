@@ -15,7 +15,8 @@ function gtp_edit_classrooms_shortcode() {
     if (isset($_POST['gtp_update_classroom'])) {
         $classroom_id = intval($_POST['classroom_id']);
         $school = sanitize_text_field($_POST['school']);
-        $subject = sanitize_text_field($_POST['subject']);
+        $resolved = gtp_resolve_subject_from_post($_POST, 'subject', 'new_subject');
+        $subject = $resolved['subject'] ?? '';
         $teacher_first_name = sanitize_text_field($_POST['teacher_first_name']);
         $teacher_last_name = sanitize_text_field($_POST['teacher_last_name']);
         $teacher_email = sanitize_email($_POST['teacher_email']);
@@ -25,6 +26,9 @@ function gtp_edit_classrooms_shortcode() {
         $time_slot = gtp_format_time_range($start_time, $end_time);
         $tutor_id = intval($_POST['tutor_id']);
 
+        if (!empty($resolved['error'])) {
+            echo '<p class="gtp-msg is-error gtp-persist">' . esc_html($resolved['error']) . '</p>';
+        } else {
         // Update classroom details
         $wpdb->update(
             $classrooms_table,
@@ -80,6 +84,7 @@ function gtp_edit_classrooms_shortcode() {
         }
 
         echo '<p class="gtp-msg is-success">Classroom updated successfully!</p>';
+        }
     }
 
     // Display edit form if a classroom is selected
@@ -102,7 +107,16 @@ function gtp_edit_classrooms_shortcode() {
                 </div>
                 <div>
                     <label>Subject:</label>
-                    <input type="text" name="subject" value="<?php echo esc_attr($classroom->subject); ?>" required style="width:100%; padding:8px; margin-bottom:10px;">
+                    <?php
+                    echo gtp_render_subject_select([
+                        'name' => 'subject',
+                        'id' => 'gtp-edit-classroom-subject',
+                        'selected' => $classroom->subject,
+                        'required' => true,
+                        'allow_add' => true,
+                    ]);
+                    echo gtp_subject_select_script();
+                    ?>
                 </div>
                 <div>
                     <label>Start Time:</label>
@@ -161,10 +175,7 @@ function gtp_edit_classrooms_shortcode() {
         "SELECT DISTINCT school FROM $classrooms_table WHERE semester_id = %d ORDER BY school ASC",
         $semester_id
     ));
-    $subjects = $wpdb->get_col($wpdb->prepare(
-        "SELECT DISTINCT subject FROM $classrooms_table WHERE semester_id = %d ORDER BY subject ASC",
-        $semester_id
-    ));
+    $subjects = gtp_get_subjects();
 
     $selected_school = isset($_GET['school']) ? sanitize_text_field($_GET['school']) : '';
     $selected_subject = isset($_GET['subject']) ? sanitize_text_field($_GET['subject']) : '';
@@ -188,8 +199,12 @@ function gtp_edit_classrooms_shortcode() {
         $params[] = $selected_school;
     }
     if ($selected_subject !== '') {
-        $sql .= ' AND c.subject = %s';
-        $params[] = $selected_subject;
+        $match = gtp_subject_match_values($selected_subject);
+        $ph = implode(',', array_fill(0, count($match), '%s'));
+        $sql .= " AND c.subject IN ($ph)";
+        foreach ($match as $m) {
+            $params[] = $m;
+        }
     }
     if ($selected_assignment === 'unassigned') {
         $sql .= ' AND a.id IS NULL';

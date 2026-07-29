@@ -129,7 +129,7 @@ function gtp_manage_people_shortcode() {
         $role = '';
     }
 
-    $subjects = $wpdb->get_col("SELECT DISTINCT subject FROM $class_table WHERE subject IS NOT NULL AND subject <> '' ORDER BY subject ASC");
+    $subjects = gtp_get_subjects();
     $schools = $wpdb->get_col("SELECT DISTINCT school FROM $class_table WHERE school IS NOT NULL AND school <> '' ORDER BY school ASC");
 
     $sql = "SELECT DISTINCT u.id, u.username, u.email, u.first_name, u.last_name, u.role, u.validated, u.school, u.subject_preferences, u.headshot_url
@@ -155,8 +155,12 @@ function gtp_manage_people_shortcode() {
     }
 
     if ($subject !== '') {
-        $wheres[] = 'c.subject = %s';
-        $params[] = $subject;
+        $match = gtp_subject_match_values($subject);
+        $ph = implode(',', array_fill(0, count($match), '%s'));
+        $wheres[] = "c.subject IN ($ph)";
+        foreach ($match as $m) {
+            $params[] = $m;
+        }
     }
 
     if ($school !== '') {

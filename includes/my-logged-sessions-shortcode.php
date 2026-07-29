@@ -73,18 +73,26 @@ function gtp_my_logged_sessions_shortcode() {
     $start_date = isset($_GET['start_date']) ? sanitize_text_field($_GET['start_date']) : '';
     $end_date = isset($_GET['end_date']) ? sanitize_text_field($_GET['end_date']) : '';
 
-    $sql = $wpdb->prepare("SELECT * FROM $sessions_table WHERE tutor_username = %s", $_SESSION['gtp_user']['username']);
+    $sql = "SELECT * FROM $sessions_table WHERE tutor_username = %s";
+    $params = [$_SESSION['gtp_user']['username']];
     if ($selected_subject) {
-        $sql .= $wpdb->prepare(" AND subject = %s", $selected_subject);
+        $match = gtp_subject_match_values($selected_subject);
+        $ph = implode(',', array_fill(0, count($match), '%s'));
+        $sql .= " AND subject IN ($ph)";
+        foreach ($match as $m) {
+            $params[] = $m;
+        }
     }
     if ($start_date && $end_date) {
-        $sql .= $wpdb->prepare(" AND session_date BETWEEN %s AND %s", $start_date, $end_date);
+        $sql .= ' AND session_date BETWEEN %s AND %s';
+        $params[] = $start_date;
+        $params[] = $end_date;
     }
-    $sql .= " ORDER BY session_date DESC";
-    $sessions = $wpdb->get_results($sql);
+    $sql .= ' ORDER BY session_date DESC';
+    $sessions = $wpdb->get_results($wpdb->prepare($sql, $params));
 
     // Get subjects for filters
-    $subjects = $wpdb->get_col($wpdb->prepare("SELECT DISTINCT subject FROM $sessions_table WHERE tutor_username = %s", $_SESSION['gtp_user']['username']));
+    $subjects = gtp_get_subjects();
 
     ob_start();
     ?>

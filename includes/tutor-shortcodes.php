@@ -392,12 +392,8 @@ function gtp_log_substitute_session_shortcode() {
         }
     }
 
-    // Get all subjects
-    $subjects = $wpdb->get_col(
-        $wpdb->prepare(
-            "SELECT DISTINCT subject FROM {$wpdb->prefix}gtp_classrooms ORDER BY subject ASC"
-        )
-    );
+    // Get all subjects from the shared catalog
+    $subjects = gtp_get_subjects();
 
     ob_start();
     ?>
@@ -521,6 +517,7 @@ function gtp_ta_profile_shortcode()
             }
         }
         $update_data['subject_preferences'] = json_encode($subject_preferences);
+        $update_data['email_notifications'] = !empty($_POST['email_notifications']) ? 1 : 0;
 
         if (!empty($update_data)) {
             $wpdb->update(
@@ -551,7 +548,7 @@ function gtp_ta_profile_shortcode()
     $headshot_url = $tutor->headshot_url;
     $subject_preferences = json_decode($tutor->subject_preferences, true) ?: [];
 
-    $all_subjects = ['AP Computer Science Principles', 'AP Biology', 'AP Statistics', 'AP Physics 1'];
+    $all_subjects = gtp_get_subjects();
     $preference_levels = [
         'cannot_tutor' => 'Cannot Tutor',
         'willing_to_tutor' => 'Willing to Tutor',
@@ -649,6 +646,8 @@ function gtp_ta_profile_shortcode()
                     </table>
                 </div>
             </section>
+
+            <?php echo gtp_email_notifications_toggle_html(isset($tutor->email_notifications) ? $tutor->email_notifications : 1); ?>
 
             <div class="gtp-form-actions">
                 <button type="submit" name="gtp_update_profile" value="1" class="button button-primary">Save profile</button>

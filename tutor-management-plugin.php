@@ -5,7 +5,7 @@ Description: A custom plugin for managing tutors and students.
 Version: 1.0
 Author: Maggie Dykstra
 */
-define('GTP_DB_VERSION', '4.4'); // Increment this when schema changes
+define('GTP_DB_VERSION', '4.6'); // Increment this when schema changes
 
 add_action('init', 'gtp_start_session', 1);
 function gtp_start_session() {
@@ -99,6 +99,7 @@ defined('ABSPATH') or die('No script kiddies please!');
 
 // Include plugin modules
 require_once plugin_dir_path(__FILE__) . 'includes/schema.php';
+require_once plugin_dir_path(__FILE__) . 'includes/subjects.php';
 require_once plugin_dir_path(__FILE__) . 'includes/WP-admin-pages.php';
 require_once plugin_dir_path(__FILE__) . 'includes/login-shortcodes.php';
 require_once plugin_dir_path(__FILE__) . 'includes/password-invite.php';
@@ -107,6 +108,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/flagged-sessions.php';
 require_once plugin_dir_path(__FILE__) . 'includes/manage-people.php';
 require_once plugin_dir_path(__FILE__) . 'includes/tutor-resources.php';
 require_once plugin_dir_path(__FILE__) . 'includes/monthly-checkins.php';
+require_once plugin_dir_path(__FILE__) . 'includes/notifications.php';
 require_once plugin_dir_path(__FILE__) . 'includes/semesters.php';
 require_once plugin_dir_path(__FILE__) . 'includes/site-bugs.php';
 require_once plugin_dir_path(__FILE__) . 'includes/page-creation.php';

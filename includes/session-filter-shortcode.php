@@ -4,17 +4,11 @@
  */
 
 function gtp_session_filter_subject_choices() {
-    if (function_exists('gtp_spreadsheet_subject_choices')) {
-        return array_keys(gtp_spreadsheet_subject_choices());
-    }
-    return ['Biology', 'CSP', 'Physics', 'Statistics'];
+    return gtp_get_subjects();
 }
 
 function gtp_session_filter_subjects_for_choice($choice) {
-    if (function_exists('gtp_spreadsheet_subjects_for_choice')) {
-        return gtp_spreadsheet_subjects_for_choice($choice);
-    }
-    return [$choice];
+    return gtp_subject_match_values($choice);
 }
 
 /**

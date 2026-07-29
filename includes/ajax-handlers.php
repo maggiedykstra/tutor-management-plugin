@@ -271,24 +271,26 @@ function gtp_get_classrooms_for_subject() {
 
     $classrooms_table = $wpdb->prefix . 'gtp_classrooms';
     $assignments_table = $wpdb->prefix . 'gtp_class_assignments';
+    $match = gtp_subject_match_values($subject);
+    $ph = implode(',', array_fill(0, count($match), '%s'));
+    $semester_id = gtp_get_live_semester_id();
 
     if ($is_substitute) {
+        $params = array_merge($match, [$semester_id]);
         $classrooms = $wpdb->get_results($wpdb->prepare(
             "SELECT id, school, teacher_first_name, teacher_last_name, start_time, end_time
              FROM $classrooms_table
-             WHERE subject = %s AND semester_id = %d",
-            $subject,
-            gtp_get_live_semester_id()
+             WHERE subject IN ($ph) AND semester_id = %d",
+            ...$params
         ));
     } else {
+        $params = array_merge($match, [$tutor_id, $semester_id]);
         $classrooms = $wpdb->get_results($wpdb->prepare(
             "SELECT c.id, c.school, c.teacher_first_name, c.teacher_last_name, c.start_time, c.end_time
              FROM $classrooms_table c
              JOIN $assignments_table a ON c.id = a.classroom_id
-             WHERE c.subject = %s AND a.tutor_id = %d AND c.semester_id = %d",
-            $subject,
-            $tutor_id,
-            gtp_get_live_semester_id()
+             WHERE c.subject IN ($ph) AND a.tutor_id = %d AND c.semester_id = %d",
+            ...$params
         ));
     }
 
