@@ -66,11 +66,23 @@ document.addEventListener('DOMContentLoaded', function () {
         classrooms.forEach(classroom => {
             const startTime = classroom.start_time_input || '';
             const endTime = classroom.end_time_input || '';
-            html += `<option value="${classroom.id}" data-start-time="${escapeAttr(startTime)}" data-end-time="${escapeAttr(endTime)}">${classroom.school} - ${classroom.teacher_first_name} ${classroom.teacher_last_name}</option>`;
+            const subject = classroom.display_subject || classroom.subject || '';
+            const label = subject
+                ? `${subject} · ${classroom.school} - ${classroom.teacher_first_name} ${classroom.teacher_last_name}`
+                : `${classroom.school} - ${classroom.teacher_first_name} ${classroom.teacher_last_name}`;
+            html += `<option value="${classroom.id}" data-start-time="${escapeAttr(startTime)}" data-end-time="${escapeAttr(endTime)}">${escapeHtml(label)}</option>`;
         });
         classroomSelect.innerHTML = html;
         classroomSelect.disabled = false;
         clearTimes();
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
     }
 
     function escapeAttr(value) {

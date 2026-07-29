@@ -42,6 +42,11 @@ function gtp_migrate_users_table() {
     if (!$wpdb->get_var("SHOW COLUMNS FROM $table LIKE 'checkin_notified_month'")) {
         $wpdb->query("ALTER TABLE $table ADD checkin_notified_month VARCHAR(7) DEFAULT NULL AFTER email_notifications");
     }
+
+    // Account status: active | deactivated
+    if (!$wpdb->get_var("SHOW COLUMNS FROM $table LIKE 'status'")) {
+        $wpdb->query("ALTER TABLE $table ADD status VARCHAR(20) NOT NULL DEFAULT 'active' AFTER validated");
+    }
 }
 
 function gtp_migrate_announcements_table() {
@@ -63,6 +68,14 @@ function gtp_migrate_classrooms_table() {
 
     if (!$wpdb->get_var("SHOW COLUMNS FROM $table LIKE 'end_time'")) {
         $wpdb->query("ALTER TABLE $table ADD end_time TIME DEFAULT NULL");
+    }
+
+    if (!$wpdb->get_var("SHOW COLUMNS FROM $table LIKE 'meeting_days'")) {
+        $wpdb->query("ALTER TABLE $table ADD meeting_days VARCHAR(50) DEFAULT NULL AFTER end_time");
+    }
+
+    if (!$wpdb->get_var("SHOW COLUMNS FROM $table LIKE 'is_block'")) {
+        $wpdb->query("ALTER TABLE $table ADD is_block TINYINT(1) NOT NULL DEFAULT 0 AFTER meeting_days");
     }
 }
 
@@ -130,6 +143,27 @@ function gtp_migrate_students_table() {
     }
     if ($wpdb->get_var("SHOW COLUMNS FROM $table LIKE 'last_name'")) {
         $wpdb->query("ALTER TABLE $table MODIFY last_name VARCHAR(255) NULL DEFAULT NULL");
+    }
+}
+
+function gtp_migrate_monthly_checkins_table() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'gtp_monthly_checkins';
+
+    $teacher_cols = [
+        'rating_teacher_mgmt'          => "TINYINT DEFAULT NULL",
+        'explain_teacher_mgmt'         => "TEXT DEFAULT NULL",
+        'rating_teacher_engagement'    => "TINYINT DEFAULT NULL",
+        'explain_teacher_engagement'   => "TEXT DEFAULT NULL",
+        'rating_teacher_communication' => "TINYINT DEFAULT NULL",
+        'explain_teacher_communication'=> "TEXT DEFAULT NULL",
+        'rating_teacher_content'       => "TINYINT DEFAULT NULL",
+        'explain_teacher_content'      => "TEXT DEFAULT NULL",
+    ];
+    foreach ($teacher_cols as $col => $def) {
+        if (!$wpdb->get_var("SHOW COLUMNS FROM $table LIKE '$col'")) {
+            $wpdb->query("ALTER TABLE $table ADD $col $def");
+        }
     }
 }
 

@@ -66,6 +66,22 @@ function initClassInfoEditors() {
             }
         }
 
+        function getSelectedMeetingDays() {
+            return Array.prototype.map.call(
+                editPanel.querySelectorAll('.gtp-edit-meeting-days input[type="checkbox"]:checked'),
+                function (cb) { return cb.value; }
+            );
+        }
+
+        function setMeetingDays(daysCsv) {
+            const selected = String(daysCsv || '').split(',').map(function (d) {
+                return d.trim().toUpperCase();
+            }).filter(Boolean);
+            editPanel.querySelectorAll('.gtp-edit-meeting-days input[type="checkbox"]').forEach(function (cb) {
+                cb.checked = selected.indexOf(cb.value) !== -1;
+            });
+        }
+
         function fillFieldsFromCard() {
             fields.school.value = card.getAttribute('data-school') || '';
             fields.teacherFirst.value = card.getAttribute('data-teacher-first-name') || '';
@@ -75,6 +91,7 @@ function initClassInfoEditors() {
             fields.startTime.value = card.getAttribute('data-start-time') || '';
             fields.endTime.value = card.getAttribute('data-end-time') || '';
             fields.zoomLink.value = card.getAttribute('data-zoom-link') || '';
+            setMeetingDays(card.getAttribute('data-meeting-days') || '');
         }
 
         function enterEditMode() {
@@ -121,7 +138,9 @@ function initClassInfoEditors() {
             card.setAttribute('data-teacher-phone', data.teacher_phone || '');
             card.setAttribute('data-start-time', data.start_time_input || '');
             card.setAttribute('data-end-time', data.end_time_input || '');
+            card.setAttribute('data-meeting-days', data.meeting_days || '');
             card.setAttribute('data-zoom-link', data.zoom_link || '');
+            setMeetingDays(data.meeting_days || '');
         }
 
         editBtn.addEventListener('click', enterEditMode);
@@ -144,6 +163,7 @@ function initClassInfoEditors() {
                 teacher_phone: fields.teacherPhone.value.trim(),
                 start_time: fields.startTime.value,
                 end_time: fields.endTime.value,
+                meeting_days: getSelectedMeetingDays().join(','),
                 zoom_link: fields.zoomLink.value.trim()
             }).then(function (data) {
                 saveBtn.disabled = false;

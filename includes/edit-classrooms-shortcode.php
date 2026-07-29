@@ -24,6 +24,8 @@ function gtp_edit_classrooms_shortcode() {
         $start_time = gtp_sanitize_time($_POST['start_time'] ?? '');
         $end_time = gtp_sanitize_time($_POST['end_time'] ?? '');
         $time_slot = gtp_format_time_range($start_time, $end_time);
+        $meeting_days = gtp_meeting_days_to_storage($_POST['meeting_days'] ?? []);
+        $is_block = !empty($_POST['is_block']) ? 1 : 0;
         $tutor_id = intval($_POST['tutor_id']);
 
         if (!empty($resolved['error'])) {
@@ -42,6 +44,8 @@ function gtp_edit_classrooms_shortcode() {
                 'start_time' => $start_time,
                 'end_time' => $end_time,
                 'time_slot' => $time_slot,
+                'meeting_days' => $meeting_days,
+                'is_block' => $is_block,
             ],
             ['id' => $classroom_id]
         );
@@ -125,6 +129,19 @@ function gtp_edit_classrooms_shortcode() {
                 <div>
                     <label>End Time:</label>
                     <input type="time" name="end_time" step="60" value="<?php echo esc_attr(gtp_time_input_value($classroom->end_time)); ?>" style="width:100%; padding:8px; margin-bottom:10px;">
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label>Days of the week:</label>
+                    <?php echo gtp_render_meeting_days_checkboxes([
+                        'id_prefix' => 'gtp-edit-day',
+                        'selected' => $classroom->meeting_days ?? '',
+                    ]); ?>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label class="gtp-check-row" style="display:flex; align-items:flex-start; gap:8px; margin:0 0 10px;">
+                        <input type="checkbox" name="is_block" value="1" <?php checked(!empty($classroom->is_block)); ?>>
+                        <span>This class is a Block class / one semester only</span>
+                    </label>
                 </div>
                 <div>
                     <label>Teacher First Name:</label>
@@ -252,7 +269,7 @@ function gtp_edit_classrooms_shortcode() {
                     <th style="border: 1px solid #ddd; padding: 8px;">School</th>
                     <th style="border: 1px solid #ddd; padding: 8px;">Subject</th>
                     <th style="border: 1px solid #ddd; padding: 8px;">Teacher</th>
-                    <th style="border: 1px solid #ddd; padding: 8px;">Time Slot</th>
+                    <th style="border: 1px solid #ddd; padding: 8px;">Schedule</th>
                     <th style="border: 1px solid #ddd; padding: 8px;">Assigned TA</th>
                     <th style="border: 1px solid #ddd; padding: 8px;">Action</th>
                 </tr>
@@ -277,9 +294,9 @@ function gtp_edit_classrooms_shortcode() {
                         ?>
                         <tr>
                             <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($classroom->school); ?></td>
-                            <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($classroom->subject); ?></td>
+                            <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html(gtp_format_classroom_subject($classroom)); ?></td>
                             <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($classroom->teacher_first_name . ' ' . $classroom->teacher_last_name); ?></td>
-                            <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html(gtp_format_time_range($classroom->start_time, $classroom->end_time)); ?></td>
+                            <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html(gtp_format_classroom_schedule($classroom)); ?></td>
                             <td style="border: 1px solid #ddd; padding: 8px;"><?php echo esc_html($tutor_name); ?></td>
                             <td style="border: 1px solid #ddd; padding: 8px;"><a href="<?php echo esc_url($edit_url); ?>" class="button">Edit</a></td>
                         </tr>

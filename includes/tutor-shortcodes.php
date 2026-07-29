@@ -123,14 +123,14 @@ function gtp_TA_dashboard_shortcode() {
                         <div class="gtp-home-class-list">
                             <?php foreach ($classrooms as $classroom) :
                                 $teacher = trim($classroom->teacher_first_name . ' ' . $classroom->teacher_last_name);
-                                $time = gtp_format_time_range($classroom->start_time, $classroom->end_time);
+                                $time = gtp_format_classroom_schedule($classroom);
                                 $roster_count = (int) $wpdb->get_var($wpdb->prepare(
                                     "SELECT COUNT(*) FROM {$wpdb->prefix}gtp_students WHERE classroom_id = %d",
                                     $classroom->id
                                 ));
                                 ?>
                                 <article class="gtp-home-class-card">
-                                    <h3><?php echo esc_html($classroom->subject); ?> · <?php echo esc_html($classroom->school); ?></h3>
+                                    <h3><?php echo esc_html(gtp_format_classroom_subject($classroom)); ?> · <?php echo esc_html($classroom->school); ?></h3>
                                     <p><strong>Teacher:</strong> <?php echo esc_html($teacher !== '' ? $teacher : '—'); ?></p>
                                     <p class="gtp-home-muted"><strong>Time:</strong> <?php echo esc_html($time !== '' ? $time : '—'); ?></p>
                                     <p class="gtp-home-muted"><?php echo (int) $roster_count; ?> student<?php echo $roster_count === 1 ? '' : 's'; ?> on roster</p>
@@ -265,7 +265,7 @@ function gtp_log_session_shortcode() {
                         <option value="<?php echo esc_attr($classroom->id); ?>"
                                 data-start-time="<?php echo esc_attr(gtp_time_input_value($classroom->start_time)); ?>"
                                 data-end-time="<?php echo esc_attr(gtp_time_input_value($classroom->end_time)); ?>">
-                            <?php echo esc_html($classroom->subject . ', ' . $classroom->school . ' - ' . $classroom->teacher_first_name . ' ' . $classroom->teacher_last_name); ?>
+                            <?php echo esc_html(gtp_format_classroom_subject($classroom) . ', ' . $classroom->school . ' - ' . $classroom->teacher_first_name . ' ' . $classroom->teacher_last_name); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -311,7 +311,7 @@ function gtp_log_session_shortcode() {
 
             <label class="gtp-field">
                 <span>Comments (optional)</span>
-                <textarea name="comments" rows="3"></textarea>
+                <textarea name="comments" rows="3" placeholder="Comment if there were any issues during this session, if it was a makeup session, or anything else that you would like admin to know about this session"></textarea>
             </label>
 
             <label class="gtp-check-row">
@@ -460,7 +460,7 @@ function gtp_log_substitute_session_shortcode() {
 
             <label class="gtp-field">
                 <span>Comments (optional)</span>
-                <textarea name="comments" rows="3"></textarea>
+                <textarea name="comments" rows="3" placeholder="Comment if there were any issues during this session, if it was a makeup session, or anything else that you would like admin to know about this session"></textarea>
             </label>
 
             <input type="hidden" name="is_substitute" value="1">

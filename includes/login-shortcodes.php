@@ -11,7 +11,9 @@ function gtp_login_shortcode() {
 
         $user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE username = %s", $username));
 
-        if ($user && isset($user->password_set) && (int) $user->password_set === 0) {
+        if ($user && ($user->status ?? 'active') === 'deactivated') {
+            $message = '<p class="gtp-msg is-error gtp-persist">Your account has been deactivated. Please contact an administrator.</p>';
+        } elseif ($user && isset($user->password_set) && (int) $user->password_set === 0) {
             $message = '<p class="gtp-msg is-error gtp-persist">Please set your password using the invite link sent to your email before logging in.</p>';
         } elseif ($user && password_verify($password, $user->password)) {
             $_SESSION['gtp_user'] = [

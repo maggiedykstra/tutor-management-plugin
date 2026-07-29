@@ -210,7 +210,13 @@ function gtp_update_classroom_info() {
     $start_time = gtp_sanitize_time($_POST['start_time'] ?? '');
     $end_time = gtp_sanitize_time($_POST['end_time'] ?? '');
     $zoom_link = esc_url_raw($_POST['zoom_link'] ?? '');
+    $meeting_days = gtp_meeting_days_to_storage($_POST['meeting_days'] ?? []);
     $time_slot = gtp_format_time_range($start_time, $end_time);
+    $schedule_display = gtp_format_classroom_schedule((object) [
+        'meeting_days' => $meeting_days,
+        'start_time' => $start_time,
+        'end_time' => $end_time,
+    ]);
 
     $updated = $wpdb->update(
         $wpdb->prefix . 'gtp_classrooms',
@@ -223,6 +229,7 @@ function gtp_update_classroom_info() {
             'start_time' => $start_time,
             'end_time' => $end_time,
             'time_slot' => $time_slot,
+            'meeting_days' => $meeting_days,
             'zoom_link' => $zoom_link,
         ],
         ['id' => $classroom_id]
@@ -235,10 +242,11 @@ function gtp_update_classroom_info() {
     // Ensure NULL is stored when times are cleared (wpdb may turn null into '')
     $wpdb->query($wpdb->prepare(
         "UPDATE {$wpdb->prefix}gtp_classrooms
-         SET start_time = NULLIF(%s, ''), end_time = NULLIF(%s, '')
+         SET start_time = NULLIF(%s, ''), end_time = NULLIF(%s, ''), meeting_days = NULLIF(%s, '')
          WHERE id = %d",
         $start_time ?: '',
         $end_time ?: '',
+        $meeting_days ?: '',
         $classroom_id
     ));
 
@@ -252,7 +260,8 @@ function gtp_update_classroom_info() {
         'end_time' => $end_time,
         'start_time_input' => gtp_time_input_value($start_time),
         'end_time_input' => gtp_time_input_value($end_time),
-        'time_display' => $time_slot,
+        'meeting_days' => $meeting_days,
+        'time_display' => $schedule_display,
         'zoom_link' => $zoom_link,
     ]);
 }
@@ -278,7 +287,7 @@ function gtp_get_classrooms_for_subject() {
     if ($is_substitute) {
         $params = array_merge($match, [$semester_id]);
         $classrooms = $wpdb->get_results($wpdb->prepare(
-            "SELECT id, school, teacher_first_name, teacher_last_name, start_time, end_time
+            "SELECT id, school, subject, is_block, teacher_first_name, teacher_last_name, start_time, end_time
              FROM $classrooms_table
              WHERE subject IN ($ph) AND semester_id = %d",
             ...$params
@@ -286,7 +295,7 @@ function gtp_get_classrooms_for_subject() {
     } else {
         $params = array_merge($match, [$tutor_id, $semester_id]);
         $classrooms = $wpdb->get_results($wpdb->prepare(
-            "SELECT c.id, c.school, c.teacher_first_name, c.teacher_last_name, c.start_time, c.end_time
+            "SELECT c.id, c.school, c.subject, c.is_block, c.teacher_first_name, c.teacher_last_name, c.start_time, c.end_time
              FROM $classrooms_table c
              JOIN $assignments_table a ON c.id = a.classroom_id
              WHERE c.subject IN ($ph) AND a.tutor_id = %d AND c.semester_id = %d",
@@ -297,6 +306,7 @@ function gtp_get_classrooms_for_subject() {
     foreach ($classrooms as $classroom) {
         $classroom->start_time_input = gtp_time_input_value($classroom->start_time);
         $classroom->end_time_input = gtp_time_input_value($classroom->end_time);
+        $classroom->display_subject = gtp_format_classroom_subject($classroom);
     }
 
     wp_send_json_success($classrooms);
@@ -448,9 +458,9 @@ function gtp_get_tutor_profile() {
     }
 
     $assignments = $wpdb->get_results($wpdb->prepare(
-        "SELECT c.school, c.subject,
+        "SELECT c.school, c.subject, c.is_block,
                 c.teacher_first_name, c.teacher_last_name,
-                c.start_time, c.end_time
+                c.start_time, c.end_time, c.meeting_days
          FROM {$wpdb->prefix}gtp_class_assignments a
          INNER JOIN {$wpdb->prefix}gtp_classrooms c ON c.id = a.classroom_id
          WHERE a.tutor_id = %d
@@ -461,12 +471,12 @@ function gtp_get_tutor_profile() {
     $assigned = [];
     foreach ($assignments as $row) {
         $teacher = trim($row->teacher_first_name . ' ' . $row->teacher_last_name);
-        $time = function_exists('gtp_format_time_range')
-            ? gtp_format_time_range($row->start_time, $row->end_time)
-            : '';
+        $time = function_exists('gtp_format_classroom_schedule')
+            ? gtp_format_classroom_schedule($row)
+            : gtp_format_time_range($row->start_time, $row->end_time);
         $assigned[] = [
             'school' => $row->school,
-            'subject' => $row->subject,
+            'subject' => gtp_format_classroom_subject($row),
             'teacher' => $teacher,
             'time' => $time,
         ];

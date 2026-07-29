@@ -257,6 +257,8 @@ function gtp_copy_classrooms_between_semesters($from_semester_id, $to_semester_i
             'time_slot' => $c->time_slot,
             'start_time' => $c->start_time,
             'end_time' => $c->end_time,
+            'meeting_days' => $c->meeting_days ?? null,
+            'is_block' => !empty($c->is_block) ? 1 : 0,
             'zoom_link' => $c->zoom_link,
             'semester_id' => $to_semester_id,
         ]);
@@ -675,9 +677,9 @@ function gtp_reports_shortcode() {
 
         if ($type === 'classes') {
             $rows = $wpdb->get_results($wpdb->prepare(
-                "SELECT y.label AS school_year, s.label AS semester, c.school, c.subject,
+                "SELECT y.label AS school_year, s.label AS semester, c.school, c.subject, c.is_block,
                         c.teacher_first_name, c.teacher_last_name, c.teacher_email,
-                        c.start_time, c.end_time, c.zoom_link,
+                        c.meeting_days, c.start_time, c.end_time, c.zoom_link,
                         (SELECT GROUP_CONCAT(CONCAT(u.first_name, ' ', u.last_name) SEPARATOR '; ')
                          FROM {$wpdb->prefix}gtp_class_assignments a
                          INNER JOIN {$wpdb->prefix}gtp_users u ON u.id = a.tutor_id
@@ -691,11 +693,12 @@ function gtp_reports_shortcode() {
             ));
             gtp_send_csv_download('gtp-classes.csv', [
                 'School Year', 'Semester', 'School', 'Subject', 'Teacher First', 'Teacher Last',
-                'Teacher Email', 'Start Time', 'End Time', 'Zoom', 'Tutors',
+                'Teacher Email', 'Days', 'Start Time', 'End Time', 'Zoom', 'Tutors',
             ], $rows, static function ($r) {
                 return [
-                    $r->school_year, $r->semester, $r->school, $r->subject,
+                    $r->school_year, $r->semester, $r->school, gtp_format_classroom_subject($r),
                     $r->teacher_first_name, $r->teacher_last_name, $r->teacher_email,
+                    gtp_format_meeting_days($r->meeting_days ?? ''),
                     $r->start_time, $r->end_time, $r->zoom_link, $r->tutors,
                 ];
             });

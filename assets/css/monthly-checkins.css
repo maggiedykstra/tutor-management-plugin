@@ -296,6 +296,28 @@
     color: var(--gtp-blue, #1d7196);
 }
 
+.gtp-checkin-section-heading {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 24px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #e2e2e2;
+    color: var(--gtp-blue-ink, #0e4f6a);
+}
+
+.gtp-checkin-col-group {
+    text-align: center;
+    border-bottom: 2px solid #e2e2e2;
+}
+
+.gtp-checkin-subheader th {
+    font-size: 11px;
+    color: #777;
+    font-weight: 600;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
 @media (max-width: 900px) {
     .gtp-checkin-filters label,
     .gtp-checkin-filter-check {

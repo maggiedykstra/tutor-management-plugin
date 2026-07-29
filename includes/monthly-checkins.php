@@ -31,7 +31,7 @@ function gtp_checkin_classroom_label($classroom) {
     }
     $teacher = trim(($classroom->teacher_first_name ?? '') . ' ' . ($classroom->teacher_last_name ?? ''));
     $parts = array_filter([
-        $classroom->subject ?? '',
+        gtp_format_classroom_subject($classroom),
         $classroom->school ?? '',
         $teacher !== '' ? ('T. ' . $teacher) : '',
     ]);
@@ -115,7 +115,9 @@ function gtp_count_low_rating_checkins($month = null) {
          WHERE checkin_month = %s
            AND semester_id = %d
            AND (rating_overall <= 3 OR rating_attendance <= 3
-                OR rating_participation <= 3 OR rating_progression <= 3)",
+                OR rating_participation <= 3 OR rating_progression <= 3
+                OR rating_teacher_mgmt <= 3 OR rating_teacher_engagement <= 3
+                OR rating_teacher_communication <= 3 OR rating_teacher_content <= 3)",
         $month,
         gtp_context_semester_id()
     ));
@@ -178,11 +180,11 @@ function gtp_checkin_classroom_meta_html($classroom) {
         return '';
     }
     $teacher = trim(($classroom->teacher_first_name ?? '') . ' ' . ($classroom->teacher_last_name ?? ''));
-    $time = gtp_format_time_range($classroom->start_time ?? null, $classroom->end_time ?? null);
+    $time = gtp_format_classroom_schedule($classroom);
     ob_start();
     ?>
     <div class="gtp-checkin-class-meta">
-        <p><strong>Subject:</strong> <?php echo esc_html($classroom->subject ?? '—'); ?></p>
+        <p><strong>Subject:</strong> <?php echo esc_html(gtp_format_classroom_subject($classroom) ?: '—'); ?></p>
         <p><strong>School:</strong> <?php echo esc_html($classroom->school ?? '—'); ?></p>
         <p><strong>Teacher:</strong> <?php echo esc_html($teacher !== '' ? $teacher : '—'); ?></p>
         <p><strong>Time:</strong> <?php echo esc_html($time !== '' ? $time : '—'); ?></p>
@@ -231,13 +233,19 @@ function gtp_monthly_checkins_tutor_shortcode() {
         $attendance = gtp_sanitize_rating($_POST['rating_attendance'] ?? 0);
         $participation = gtp_sanitize_rating($_POST['rating_participation'] ?? 0);
         $progression = gtp_sanitize_rating($_POST['rating_progression'] ?? 0);
+        $teacher_mgmt = gtp_sanitize_rating($_POST['rating_teacher_mgmt'] ?? 0);
+        $teacher_engagement = gtp_sanitize_rating($_POST['rating_teacher_engagement'] ?? 0);
+        $teacher_communication = gtp_sanitize_rating($_POST['rating_teacher_communication'] ?? 0);
+        $teacher_content = gtp_sanitize_rating($_POST['rating_teacher_content'] ?? 0);
 
         if (!isset($classroom_map[$classroom_id])) {
             $message = '<p class="gtp-checkin-msg is-error gtp-persist">Please select one of your assigned classes.</p>';
         } elseif (!preg_match('/^\d{4}-\d{2}$/', $month) || !gtp_checkin_month_is_open($month)) {
             $message = '<p class="gtp-checkin-msg is-error gtp-persist">That check-in month is not open yet.</p>';
         } elseif (!$overall || !$attendance || !$participation || !$progression) {
-            $message = '<p class="gtp-checkin-msg is-error gtp-persist">Please provide all four ratings (1–5).</p>';
+            $message = '<p class="gtp-checkin-msg is-error gtp-persist">Please provide all four Class/Students ratings (1–5).</p>';
+        } elseif (!$teacher_mgmt || !$teacher_engagement || !$teacher_communication || !$teacher_content) {
+            $message = '<p class="gtp-checkin-msg is-error gtp-persist">Please provide all four Teacher ratings (1–5).</p>';
         } elseif (gtp_checkin_exists($tutor_id, $classroom_id, $month)) {
             $message = '<p class="gtp-checkin-msg is-error gtp-persist">You already submitted a check-in for this class and month.</p>';
         } else {
@@ -253,6 +261,14 @@ function gtp_monthly_checkins_tutor_shortcode() {
                 'explain_attendance' => sanitize_textarea_field(wp_unslash($_POST['rating_attendance_explain'] ?? '')),
                 'explain_participation' => sanitize_textarea_field(wp_unslash($_POST['rating_participation_explain'] ?? '')),
                 'explain_progression' => sanitize_textarea_field(wp_unslash($_POST['rating_progression_explain'] ?? '')),
+                'rating_teacher_mgmt' => $teacher_mgmt,
+                'explain_teacher_mgmt' => sanitize_textarea_field(wp_unslash($_POST['rating_teacher_mgmt_explain'] ?? '')),
+                'rating_teacher_engagement' => $teacher_engagement,
+                'explain_teacher_engagement' => sanitize_textarea_field(wp_unslash($_POST['rating_teacher_engagement_explain'] ?? '')),
+                'rating_teacher_communication' => $teacher_communication,
+                'explain_teacher_communication' => sanitize_textarea_field(wp_unslash($_POST['rating_teacher_communication_explain'] ?? '')),
+                'rating_teacher_content' => $teacher_content,
+                'explain_teacher_content' => sanitize_textarea_field(wp_unslash($_POST['rating_teacher_content_explain'] ?? '')),
                 'class_no_show' => !empty($_POST['class_no_show']) ? 1 : 0,
                 'teacher_no_show' => !empty($_POST['teacher_no_show']) ? 1 : 0,
                 'comments' => sanitize_textarea_field(wp_unslash($_POST['comments'] ?? '')),
@@ -288,10 +304,10 @@ function gtp_monthly_checkins_tutor_shortcode() {
     $class_payload = [];
     foreach ($classrooms as $c) {
         $class_payload[(int) $c->id] = [
-            'subject' => $c->subject,
+            'subject' => gtp_format_classroom_subject($c),
             'school' => $c->school,
             'teacher' => trim($c->teacher_first_name . ' ' . $c->teacher_last_name),
-            'time' => gtp_format_time_range($c->start_time, $c->end_time),
+            'time' => gtp_format_classroom_schedule($c),
             'zoom' => $c->zoom_link ?: '',
         ];
     }
@@ -330,9 +346,13 @@ function gtp_monthly_checkins_tutor_shortcode() {
                                     <th>Month</th>
                                     <th>Class</th>
                                     <th>Overall</th>
-                                    <th>Attendance</th>
-                                    <th>Participation</th>
-                                    <th>Progression</th>
+                                    <th>Att.</th>
+                                    <th>Part.</th>
+                                    <th>Prog.</th>
+                                    <th>T.Mgmt</th>
+                                    <th>T.Engage</th>
+                                    <th>T.Comm</th>
+                                    <th>T.Content</th>
                                     <th>Submitted</th>
                                     <th></th>
                                 </tr>
@@ -340,7 +360,11 @@ function gtp_monthly_checkins_tutor_shortcode() {
                             <tbody>
                                 <?php foreach ($history as $row) :
                                     $low = ($row->rating_overall <= 3 || $row->rating_attendance <= 3
-                                        || $row->rating_participation <= 3 || $row->rating_progression <= 3);
+                                        || $row->rating_participation <= 3 || $row->rating_progression <= 3
+                                        || ($row->rating_teacher_mgmt && $row->rating_teacher_mgmt <= 3)
+                                        || ($row->rating_teacher_engagement && $row->rating_teacher_engagement <= 3)
+                                        || ($row->rating_teacher_communication && $row->rating_teacher_communication <= 3)
+                                        || ($row->rating_teacher_content && $row->rating_teacher_content <= 3));
                                     ?>
                                     <tr class="<?php echo $low ? 'is-low' : ''; ?>">
                                         <td><?php echo esc_html(gtp_checkin_month_label($row->checkin_month)); ?></td>
@@ -349,6 +373,10 @@ function gtp_monthly_checkins_tutor_shortcode() {
                                         <td><?php echo (int) $row->rating_attendance; ?>/5</td>
                                         <td><?php echo (int) $row->rating_participation; ?>/5</td>
                                         <td><?php echo (int) $row->rating_progression; ?>/5</td>
+                                        <td><?php echo $row->rating_teacher_mgmt ? ((int) $row->rating_teacher_mgmt . '/5') : '—'; ?></td>
+                                        <td><?php echo $row->rating_teacher_engagement ? ((int) $row->rating_teacher_engagement . '/5') : '—'; ?></td>
+                                        <td><?php echo $row->rating_teacher_communication ? ((int) $row->rating_teacher_communication . '/5') : '—'; ?></td>
+                                        <td><?php echo $row->rating_teacher_content ? ((int) $row->rating_teacher_content . '/5') : '—'; ?></td>
                                         <td><?php echo esc_html(date('M j, Y', strtotime($row->submitted_at))); ?></td>
                                         <td><a href="<?php echo esc_url(add_query_arg(['view' => 'detail', 'id' => (int) $row->id], $page_url)); ?>">View</a></td>
                                     </tr>
@@ -409,6 +437,7 @@ function gtp_monthly_checkins_tutor_shortcode() {
                             ?>
                         </div>
 
+                        <h3 class="gtp-checkin-section-heading">Class / Students</h3>
                         <?php
                         echo gtp_render_rating_field('rating_overall', 'Overall month / sessions');
                         echo gtp_render_rating_field('rating_attendance', 'Attendance');
@@ -426,6 +455,14 @@ function gtp_monthly_checkins_tutor_shortcode() {
                                 Teacher did not show up for one or more sessions
                             </label>
                         </div>
+
+                        <h3 class="gtp-checkin-section-heading">Teacher</h3>
+                        <?php
+                        echo gtp_render_rating_field('rating_teacher_mgmt', 'Teacher Management of Class');
+                        echo gtp_render_rating_field('rating_teacher_engagement', 'Teacher Engagement / Presence During Sessions');
+                        echo gtp_render_rating_field('rating_teacher_communication', 'Teacher Communication');
+                        echo gtp_render_rating_field('rating_teacher_content', 'Movement Through Content on Non-Session Days');
+                        ?>
 
                         <label class="gtp-checkin-field">
                             <span>Comments</span>
@@ -453,7 +490,7 @@ function gtp_monthly_checkins_tutor_shortcode() {
                             <li>
                                 <div>
                                     <strong><?php echo esc_html(gtp_checkin_classroom_label($c)); ?></strong>
-                                    <div class="gtp-checkin-muted"><?php echo esc_html(gtp_format_time_range($c->start_time, $c->end_time) ?: 'Time TBD'); ?></div>
+                                    <div class="gtp-checkin-muted"><?php echo esc_html(gtp_format_classroom_schedule($c) ?: 'Time TBD'); ?></div>
                                 </div>
                                 <a class="button button-primary"
                                    href="<?php echo esc_url(add_query_arg([
@@ -475,7 +512,11 @@ add_shortcode('gtp_monthly_checkins', 'gtp_monthly_checkins_tutor_shortcode');
 
 function gtp_render_checkin_detail($row, $include_back = true) {
     $low = ($row->rating_overall <= 3 || $row->rating_attendance <= 3
-        || $row->rating_participation <= 3 || $row->rating_progression <= 3);
+        || $row->rating_participation <= 3 || $row->rating_progression <= 3
+        || ($row->rating_teacher_mgmt && $row->rating_teacher_mgmt <= 3)
+        || ($row->rating_teacher_engagement && $row->rating_teacher_engagement <= 3)
+        || ($row->rating_teacher_communication && $row->rating_teacher_communication <= 3)
+        || ($row->rating_teacher_content && $row->rating_teacher_content <= 3));
     ob_start();
     ?>
     <section class="gtp-checkin-section">
@@ -488,6 +529,7 @@ function gtp_render_checkin_detail($row, $include_back = true) {
         <?php endif; ?>
         <p><strong>Tutor:</strong> <?php echo esc_html(trim(($row->tutor_first_name ?? '') . ' ' . ($row->tutor_last_name ?? ''))); ?></p>
         <?php echo gtp_checkin_classroom_meta_html($row); ?>
+        <h3 class="gtp-checkin-section-heading">Class / Students</h3>
         <ul class="gtp-checkin-detail-ratings">
             <li><strong>Overall:</strong> <?php echo (int) $row->rating_overall; ?>/5
                 <?php if ($row->explain_overall) : ?><div class="gtp-checkin-muted"><?php echo esc_html($row->explain_overall); ?></div><?php endif; ?></li>
@@ -502,6 +544,19 @@ function gtp_render_checkin_detail($row, $include_back = true) {
             <strong>Class no-show (1+ sessions):</strong> <?php echo !empty($row->class_no_show) ? 'Yes' : 'No'; ?><br>
             <strong>Teacher no-show (1+ sessions):</strong> <?php echo !empty($row->teacher_no_show) ? 'Yes' : 'No'; ?>
         </p>
+        <?php if ($row->rating_teacher_mgmt) : ?>
+        <h3 class="gtp-checkin-section-heading">Teacher</h3>
+        <ul class="gtp-checkin-detail-ratings">
+            <li><strong>Teacher Management of Class:</strong> <?php echo (int) $row->rating_teacher_mgmt; ?>/5
+                <?php if ($row->explain_teacher_mgmt) : ?><div class="gtp-checkin-muted"><?php echo esc_html($row->explain_teacher_mgmt); ?></div><?php endif; ?></li>
+            <li><strong>Teacher Engagement / Presence:</strong> <?php echo (int) $row->rating_teacher_engagement; ?>/5
+                <?php if ($row->explain_teacher_engagement) : ?><div class="gtp-checkin-muted"><?php echo esc_html($row->explain_teacher_engagement); ?></div><?php endif; ?></li>
+            <li><strong>Teacher Communication:</strong> <?php echo (int) $row->rating_teacher_communication; ?>/5
+                <?php if ($row->explain_teacher_communication) : ?><div class="gtp-checkin-muted"><?php echo esc_html($row->explain_teacher_communication); ?></div><?php endif; ?></li>
+            <li><strong>Movement Through Content (non-session days):</strong> <?php echo (int) $row->rating_teacher_content; ?>/5
+                <?php if ($row->explain_teacher_content) : ?><div class="gtp-checkin-muted"><?php echo esc_html($row->explain_teacher_content); ?></div><?php endif; ?></li>
+        </ul>
+        <?php endif; ?>
         <?php if (!empty($row->comments)) : ?>
             <p><strong>Comments:</strong></p>
             <div class="gtp-checkin-comments"><?php echo nl2br(esc_html($row->comments)); ?></div>
@@ -725,18 +780,28 @@ function gtp_monthly_checkins_admin_shortcode() {
                             <th>Tutor</th>
                             <th>Class</th>
                             <th>Status</th>
-                            <th>Overall</th>
-                            <th>Att.</th>
-                            <th>Part.</th>
-                            <th>Prog.</th>
+                            <th colspan="4" class="gtp-checkin-col-group">Class / Students</th>
+                            <th colspan="4" class="gtp-checkin-col-group">Teacher</th>
+                            <th></th>
+                        </tr>
+                        <tr class="gtp-checkin-subheader">
+                            <th></th><th></th><th></th>
+                            <th>Overall</th><th>Att.</th><th>Part.</th><th>Prog.</th>
+                            <th>Mgmt</th><th>Engage</th><th>Comm</th><th>Content</th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($rows as $row) :
                             $is_complete = ($row->_status === 'complete');
-                            $is_low = $is_complete && ($row->rating_overall <= 3 || $row->rating_attendance <= 3
-                                || $row->rating_participation <= 3 || $row->rating_progression <= 3);
+                            $is_low = $is_complete && (
+                                $row->rating_overall <= 3 || $row->rating_attendance <= 3
+                                || $row->rating_participation <= 3 || $row->rating_progression <= 3
+                                || ($row->rating_teacher_mgmt && $row->rating_teacher_mgmt <= 3)
+                                || ($row->rating_teacher_engagement && $row->rating_teacher_engagement <= 3)
+                                || ($row->rating_teacher_communication && $row->rating_teacher_communication <= 3)
+                                || ($row->rating_teacher_content && $row->rating_teacher_content <= 3)
+                            );
                             ?>
                             <tr class="<?php echo $is_low ? 'is-low' : ($is_complete ? '' : 'is-incomplete'); ?>">
                                 <td><?php echo esc_html(trim($row->first_name . ' ' . $row->last_name)); ?></td>
@@ -746,6 +811,10 @@ function gtp_monthly_checkins_admin_shortcode() {
                                 <td><?php echo $is_complete ? ((int) $row->rating_attendance . '/5') : '—'; ?></td>
                                 <td><?php echo $is_complete ? ((int) $row->rating_participation . '/5') : '—'; ?></td>
                                 <td><?php echo $is_complete ? ((int) $row->rating_progression . '/5') : '—'; ?></td>
+                                <td><?php echo ($is_complete && $row->rating_teacher_mgmt) ? ((int) $row->rating_teacher_mgmt . '/5') : '—'; ?></td>
+                                <td><?php echo ($is_complete && $row->rating_teacher_engagement) ? ((int) $row->rating_teacher_engagement . '/5') : '—'; ?></td>
+                                <td><?php echo ($is_complete && $row->rating_teacher_communication) ? ((int) $row->rating_teacher_communication . '/5') : '—'; ?></td>
+                                <td><?php echo ($is_complete && $row->rating_teacher_content) ? ((int) $row->rating_teacher_content . '/5') : '—'; ?></td>
                                 <td>
                                     <?php if ($is_complete) : ?>
                                         <a href="<?php echo esc_url(add_query_arg('id', (int) $row->id, $page_url)); ?>">View</a>

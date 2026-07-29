@@ -25,3 +25,18 @@ function gtp_handle_login() {
     }
 }
 add_action('init', 'gtp_handle_login');
+
+add_action('init', 'gtp_check_session_active_status', 5);
+function gtp_check_session_active_status() {
+    if (empty($_SESSION['gtp_user'])) {
+        return;
+    }
+    global $wpdb;
+    $status = $wpdb->get_var($wpdb->prepare(
+        "SELECT status FROM {$wpdb->prefix}gtp_users WHERE id = %d",
+        (int) $_SESSION['gtp_user']['id']
+    ));
+    if ($status === 'deactivated') {
+        unset($_SESSION['gtp_user']);
+    }
+}

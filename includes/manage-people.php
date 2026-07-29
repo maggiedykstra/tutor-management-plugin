@@ -119,24 +119,65 @@ function gtp_manage_people_shortcode() {
     $assign_table = $wpdb->prefix . 'gtp_class_assignments';
     $class_table = $wpdb->prefix . 'gtp_classrooms';
 
+    $admin_id = (int) $_SESSION['gtp_user']['id'];
+    $message = '';
+
+    if (isset($_POST['gtp_deactivate_user']) && check_admin_referer('gtp_manage_person_' . (int) ($_POST['person_id'] ?? 0), 'gtp_person_nonce')) {
+        $person_id = (int) ($_POST['person_id'] ?? 0);
+        if ($person_id > 0 && $person_id !== $admin_id) {
+            $wpdb->update($users_table, ['status' => 'deactivated'], ['id' => $person_id]);
+            $message = '<p class="gtp-msg is-success">Account deactivated.</p>';
+        } else {
+            $message = '<p class="gtp-msg is-error">You cannot deactivate your own account.</p>';
+        }
+    }
+
+    if (isset($_POST['gtp_reactivate_user']) && check_admin_referer('gtp_manage_person_' . (int) ($_POST['person_id'] ?? 0), 'gtp_person_nonce')) {
+        $person_id = (int) ($_POST['person_id'] ?? 0);
+        if ($person_id > 0) {
+            $wpdb->update($users_table, ['status' => 'active'], ['id' => $person_id]);
+            $message = '<p class="gtp-msg is-success">Account reactivated.</p>';
+        }
+    }
+
+    if (isset($_POST['gtp_delete_user']) && check_admin_referer('gtp_manage_person_' . (int) ($_POST['person_id'] ?? 0), 'gtp_person_nonce')) {
+        $person_id = (int) ($_POST['person_id'] ?? 0);
+        if ($person_id > 0 && $person_id !== $admin_id) {
+            $wpdb->delete($users_table, ['id' => $person_id]);
+            $message = '<p class="gtp-msg is-success">Account permanently deleted. Historical session data is preserved.</p>';
+        } else {
+            $message = '<p class="gtp-msg is-error">You cannot delete your own account.</p>';
+        }
+    }
+
     $q = isset($_GET['q']) ? sanitize_text_field(wp_unslash($_GET['q'])) : '';
     $role = isset($_GET['role']) ? sanitize_text_field(wp_unslash($_GET['role'])) : '';
     $subject = isset($_GET['subject']) ? sanitize_text_field(wp_unslash($_GET['subject'])) : '';
     $school = isset($_GET['school']) ? sanitize_text_field(wp_unslash($_GET['school'])) : '';
+    $status_filter = isset($_GET['status']) ? sanitize_text_field(wp_unslash($_GET['status'])) : 'active';
 
     $allowed_roles = ['admin', 'tutor'];
     if ($role !== '' && !in_array($role, $allowed_roles, true)) {
         $role = '';
     }
+    if (!in_array($status_filter, ['active', 'deactivated', 'all'], true)) {
+        $status_filter = 'active';
+    }
 
     $subjects = gtp_get_subjects();
     $schools = $wpdb->get_col("SELECT DISTINCT school FROM $class_table WHERE school IS NOT NULL AND school <> '' ORDER BY school ASC");
 
-    $sql = "SELECT DISTINCT u.id, u.username, u.email, u.first_name, u.last_name, u.role, u.validated, u.school, u.subject_preferences, u.headshot_url
+    $sql = "SELECT DISTINCT u.id, u.username, u.email, u.first_name, u.last_name, u.role, u.validated, u.school, u.subject_preferences, u.headshot_url, COALESCE(u.status, 'active') AS status
             FROM $users_table u";
     $joins = [];
     $wheres = ["u.role IN ('admin', 'tutor')", 'u.validated = 1'];
     $params = [];
+
+    if ($status_filter === 'active') {
+        $wheres[] = "(u.status = 'active' OR u.status IS NULL OR u.status = '')";
+    } elseif ($status_filter === 'deactivated') {
+        $wheres[] = "u.status = 'deactivated'";
+    }
 
     if ($subject !== '' || $school !== '') {
         $joins[] = "INNER JOIN $assign_table a ON a.tutor_id = u.id";
@@ -186,7 +227,7 @@ function gtp_manage_people_shortcode() {
         }, $users);
         $ph = implode(',', array_fill(0, count($ids), '%d'));
         $rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT a.tutor_id, c.subject, c.school
+            "SELECT a.tutor_id, c.subject, c.school, c.is_block
              FROM $assign_table a
              INNER JOIN $class_table c ON c.id = a.classroom_id
              WHERE a.tutor_id IN ($ph)
@@ -198,7 +239,7 @@ function gtp_manage_people_shortcode() {
             if (!isset($assignment_map[$tid])) {
                 $assignment_map[$tid] = [];
             }
-            $assignment_map[$tid][] = $row->subject . ' · ' . $row->school;
+            $assignment_map[$tid][] = gtp_format_classroom_subject($row) . ' · ' . $row->school;
         }
     }
 
@@ -210,6 +251,7 @@ function gtp_manage_people_shortcode() {
         <?php echo gtp_dashboard_back_link('admin'); ?>
         <h1 class="gtp-page-title">Manage people</h1>
         <p class="gtp-people-muted">Search and filter all validated admins and tutors.</p>
+        <?php echo $message; ?>
 
         <form class="gtp-people-filters" method="get" action="<?php echo esc_url($action_url); ?>">
             <label>
@@ -242,6 +284,14 @@ function gtp_manage_people_shortcode() {
                     <?php endforeach; ?>
                 </select>
             </label>
+            <label>
+                <span>Status</span>
+                <select name="status">
+                    <option value="active" <?php selected($status_filter, 'active'); ?>>Active</option>
+                    <option value="deactivated" <?php selected($status_filter, 'deactivated'); ?>>Deactivated</option>
+                    <option value="all" <?php selected($status_filter, 'all'); ?>>All</option>
+                </select>
+            </label>
             <div class="gtp-people-filter-actions">
                 <button type="submit" class="button button-primary">Apply</button>
                 <a class="button" href="<?php echo esc_url($action_url); ?>">Clear</a>
@@ -261,19 +311,26 @@ function gtp_manage_people_shortcode() {
                             <th>Type</th>
                             <th>Email</th>
                             <th>Classes</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($users as $user) :
                             $name = trim($user->first_name . ' ' . $user->last_name);
                             $classes = $assignment_map[(int) $user->id] ?? [];
+                            $is_deactivated = ($user->status ?? 'active') === 'deactivated';
+                            $is_self = (int) $user->id === $admin_id;
+                            $person_id = (int) $user->id;
                             ?>
-                            <tr>
+                            <tr<?php echo $is_deactivated ? ' class="gtp-person-deactivated"' : ''; ?>>
                                 <td>
                                     <div class="gtp-people-name-cell">
                                         <?php echo gtp_user_avatar_html($user, 'gtp-home-avatar gtp-people-avatar'); ?>
                                         <div>
                                             <strong><?php echo esc_html($name); ?></strong>
+                                            <?php if ($is_deactivated) : ?>
+                                                <span class="gtp-person-status-badge">Deactivated</span>
+                                            <?php endif; ?>
                                             <div class="gtp-people-muted">@<?php echo esc_html($user->username); ?></div>
                                         </div>
                                     </div>
@@ -291,6 +348,25 @@ function gtp_manage_people_shortcode() {
                                         <span class="gtp-people-muted"><?php echo $user->role === 'tutor' ? 'Unassigned' : '—'; ?></span>
                                     <?php else : ?>
                                         <?php echo esc_html(implode('; ', $classes)); ?>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="gtp-person-actions-cell">
+                                    <?php if (!$is_self) : ?>
+                                        <form method="post" class="gtp-person-action-form">
+                                            <?php wp_nonce_field('gtp_manage_person_' . $person_id, 'gtp_person_nonce'); ?>
+                                            <input type="hidden" name="person_id" value="<?php echo $person_id; ?>">
+                                            <?php if ($is_deactivated) : ?>
+                                                <button type="submit" name="gtp_reactivate_user" value="1" class="button">Reactivate</button>
+                                            <?php else : ?>
+                                                <button type="submit" name="gtp_deactivate_user" value="1" class="button">Deactivate</button>
+                                            <?php endif; ?>
+                                            <button type="submit" name="gtp_delete_user" value="1" class="button gtp-remove-btn"
+                                                onclick="return confirm('Permanently delete <?php echo esc_js($name); ?>? Their session history will be preserved but the account cannot be recovered.');">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    <?php else : ?>
+                                        <span class="gtp-people-muted">—</span>
                                     <?php endif; ?>
                                 </td>
                             </tr>

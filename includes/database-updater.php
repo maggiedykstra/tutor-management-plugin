@@ -47,6 +47,7 @@ function gtp_update_db_schema() {
         gtp_migrate_semester_columns();
         gtp_migrate_subject_catalog();
         gtp_migrate_announcements_table();
+        gtp_migrate_monthly_checkins_table();
 
         update_option('gtp_db_version', GTP_DB_VERSION);
     }

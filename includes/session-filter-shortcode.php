@@ -301,7 +301,7 @@ function gtp_session_filter_shortcode() {
                                 <option value="">-- All Classrooms --</option>
                                 <?php foreach ($classrooms as $classroom) : ?>
                                     <option value="<?php echo (int) $classroom->id; ?>" <?php selected(isset($_GET['classroom_id']) ? $_GET['classroom_id'] : '', $classroom->id); ?>>
-                                        <?php echo esc_html("{$classroom->school} - {$classroom->subject} ({$classroom->teacher_first_name} {$classroom->teacher_last_name})"); ?>
+                                        <?php echo esc_html("{$classroom->school} - " . gtp_format_classroom_subject($classroom) . " ({$classroom->teacher_first_name} {$classroom->teacher_last_name})"); ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>

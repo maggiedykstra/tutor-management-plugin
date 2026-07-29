@@ -5,7 +5,7 @@ Description: A custom plugin for managing tutors and students.
 Version: 1.0
 Author: Maggie Dykstra
 */
-define('GTP_DB_VERSION', '4.6'); // Increment this when schema changes
+define('GTP_DB_VERSION', '4.9'); // Increment this when schema changes
 
 add_action('init', 'gtp_start_session', 1);
 function gtp_start_session() {
@@ -198,7 +198,7 @@ function gtp_enqueue_admin_dashboard_scripts() {
             'gtp-dashboard-home',
             plugin_dir_url(__FILE__) . 'assets/css/dashboard-home.css',
             [],
-            '2.0'
+            '2.1'
         );
     }
 
@@ -264,7 +264,7 @@ function gtp_enqueue_monthly_checkin_assets() {
             'gtp-monthly-checkins',
             plugin_dir_url(__FILE__) . 'assets/css/monthly-checkins.css',
             [],
-            '1.2'
+            '1.3'
         );
     }
 
@@ -287,13 +287,13 @@ function gtp_enqueue_my_classes_scripts() {
             'gtp-my-classes-roster',
             plugin_dir_url(__FILE__) . 'assets/css/my-classes-roster.css',
             [],
-            '1.9'
+            '2.0'
         );
         wp_enqueue_script(
             'gtp-my-classes-roster',
             plugin_dir_url(__FILE__) . 'assets/js/my-classes-roster.js',
             [],
-            '1.8',
+            '2.0',
             true
         );
         wp_localize_script(

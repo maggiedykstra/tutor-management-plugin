@@ -256,9 +256,11 @@ function gtp_spreadsheet_view_shortcode() {
                     if (!empty($selected_classroom->tutor_first_name) || !empty($selected_classroom->tutor_last_name)) {
                         $ta_name = trim($selected_classroom->tutor_first_name . ' ' . $selected_classroom->tutor_last_name);
                     }
-                    $class_times = gtp_format_time_range($selected_classroom->start_time, $selected_classroom->end_time);
+                    $class_times = gtp_format_classroom_schedule($selected_classroom);
                     ?>
                     <div class="gtp-spreadsheet-meta">
+                        <span><strong>Subject:</strong> <?php echo esc_html(gtp_format_classroom_subject($selected_classroom)); ?></span>
+                        <span class="gtp-ss-meta-sep">|</span>
                         <span><strong>School:</strong> <?php echo esc_html($selected_classroom->school); ?></span>
                         <span class="gtp-ss-meta-sep">|</span>
                         <span><strong>Teacher:</strong> <?php echo esc_html(trim($selected_classroom->teacher_first_name . ' ' . $selected_classroom->teacher_last_name)); ?></span>
@@ -327,7 +329,7 @@ function gtp_spreadsheet_view_shortcode() {
 
             <div class="gtp-spreadsheet-tabs" role="tablist">
                 <?php foreach ($classrooms as $classroom) :
-                    $tab_label = $classroom->school;
+                    $tab_label = gtp_format_classroom_subject($classroom) . ' · ' . $classroom->school;
                     if (!empty($classroom->tutor_first_name) && !empty($classroom->tutor_last_name)) {
                         $initial = strtoupper(substr($classroom->tutor_first_name, 0, 1));
                         $tab_label .= ' (' . $initial . '. ' . $classroom->tutor_last_name . ')';

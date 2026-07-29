@@ -93,6 +93,143 @@ function gtp_format_time_range($start_time, $end_time) {
     return $start ?: $end;
 }
 
+/** Ordered weekday keys used for classroom schedules. */
+function gtp_meeting_day_options() {
+    return [
+        'M' => 'M',
+        'T' => 'T',
+        'W' => 'W',
+        'TH' => 'TH',
+        'F' => 'F',
+    ];
+}
+
+/**
+ * Normalize meeting days from POST/array/string into ordered unique keys.
+ *
+ * @param mixed $raw
+ * @return string[]
+ */
+function gtp_normalize_meeting_days($raw) {
+    $allowed = array_keys(gtp_meeting_day_options());
+    if (is_string($raw)) {
+        $raw = preg_split('/\s*,\s*/', $raw, -1, PREG_SPLIT_NO_EMPTY);
+    }
+    if (!is_array($raw)) {
+        return [];
+    }
+    $days = [];
+    foreach ($raw as $day) {
+        $day = strtoupper(trim((string) $day));
+        // Accept common aliases
+        if ($day === 'THU' || $day === 'THURS' || $day === 'R') {
+            $day = 'TH';
+        }
+        if (in_array($day, $allowed, true) && !in_array($day, $days, true)) {
+            $days[] = $day;
+        }
+    }
+    // Keep canonical order
+    return array_values(array_filter($allowed, static function ($key) use ($days) {
+        return in_array($key, $days, true);
+    }));
+}
+
+/** Store-ready comma string, e.g. "M,W,F". */
+function gtp_meeting_days_to_storage($raw) {
+    return implode(',', gtp_normalize_meeting_days($raw));
+}
+
+/** Human label, e.g. "M, W, F". */
+function gtp_format_meeting_days($raw) {
+    return implode(', ', gtp_normalize_meeting_days($raw));
+}
+
+/**
+ * Days + time for a classroom, e.g. "M, W · 3:00 PM – 4:00 PM".
+ *
+ * @param object|array|null $classroom
+ */
+function gtp_format_classroom_schedule($classroom) {
+    if (!$classroom) {
+        return '';
+    }
+    $classroom = (object) $classroom;
+    $days = gtp_format_meeting_days($classroom->meeting_days ?? '');
+    $time = gtp_format_time_range($classroom->start_time ?? null, $classroom->end_time ?? null);
+    if ($days && $time) {
+        return $days . ' · ' . $time;
+    }
+    return $days ?: $time;
+}
+
+/** Whether a classroom is marked as a Block (one-semester) class. */
+function gtp_classroom_is_block($classroom) {
+    if (is_object($classroom)) {
+        return !empty($classroom->is_block);
+    }
+    if (is_array($classroom)) {
+        return !empty($classroom['is_block']);
+    }
+    return !empty($classroom);
+}
+
+/**
+ * Classroom subject/name for display, with "(Block)" when applicable.
+ *
+ * @param object|array|string $classroom_or_subject Classroom row or subject string
+ * @param bool|null $is_block Only used when first arg is a subject string
+ */
+function gtp_format_classroom_subject($classroom_or_subject, $is_block = null) {
+    if (is_object($classroom_or_subject) || is_array($classroom_or_subject)) {
+        $row = (object) $classroom_or_subject;
+        $subject = (string) ($row->subject ?? '');
+        $block = gtp_classroom_is_block($row);
+    } else {
+        $subject = (string) $classroom_or_subject;
+        $block = (bool) $is_block;
+    }
+    if ($subject === '') {
+        return '';
+    }
+    return $block ? ($subject . ' (Block)') : $subject;
+}
+
+/**
+ * Render M–F checkboxes for classroom forms.
+ *
+ * @param array $args {
+ *   @type string $name     Input name (default meeting_days[])
+ *   @type array|string $selected
+ *   @type string $id_prefix
+ * }
+ */
+function gtp_render_meeting_days_checkboxes($args = []) {
+    $name = $args['name'] ?? 'meeting_days[]';
+    $selected = gtp_normalize_meeting_days($args['selected'] ?? []);
+    $id_prefix = $args['id_prefix'] ?? 'gtp-day';
+    $class = $args['class'] ?? 'gtp-meeting-days';
+
+    ob_start();
+    ?>
+    <div class="<?php echo esc_attr($class); ?>">
+        <?php foreach (gtp_meeting_day_options() as $key => $label) :
+            $id = $id_prefix . '-' . strtolower($key);
+            ?>
+            <label class="gtp-meeting-day" for="<?php echo esc_attr($id); ?>">
+                <input type="checkbox"
+                       id="<?php echo esc_attr($id); ?>"
+                       name="<?php echo esc_attr($name); ?>"
+                       value="<?php echo esc_attr($key); ?>"
+                       <?php checked(in_array($key, $selected, true)); ?>>
+                <span><?php echo esc_html($label); ?></span>
+            </label>
+        <?php endforeach; ?>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
 /**
  * Dashboard home URL for the current (or given) GTP role.
  */

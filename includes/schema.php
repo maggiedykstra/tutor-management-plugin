@@ -109,6 +109,8 @@ function gtp_create_classrooms_table() {
         time_slot varchar(255) DEFAULT NULL,
         start_time time DEFAULT NULL,
         end_time time DEFAULT NULL,
+        meeting_days varchar(50) DEFAULT NULL,
+        is_block tinyint(1) NOT NULL DEFAULT 0,
         zoom_link varchar(255) DEFAULT NULL,
         semester_id mediumint(9) DEFAULT NULL,
         PRIMARY KEY (id),

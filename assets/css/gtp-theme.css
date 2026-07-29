@@ -1409,6 +1409,38 @@ a.gtp-login-submit:hover {
     border-radius: 6px;
 }
 
+.gtp-meeting-days {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 4px 0 0;
+}
+
+.gtp-meeting-day {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 6px 10px;
+    border: 1px solid var(--gtp-border, #d8d8d8);
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.gtp-meeting-day input {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+}
+
+.gtp-meeting-day:has(input:checked) {
+    border-color: #0073aa;
+    background: #f0f7fb;
+}
+
 .gtp-email-notify-card {
     margin-top: 8px;
 }

@@ -219,7 +219,7 @@ function gtp_enqueue_plugin_page_chrome_css() {
         'gtp-theme',
         plugins_url('assets/css/gtp-theme.css', dirname(__DIR__) . '/tutor-management-plugin.php'),
         [],
-        '3.5'
+        '3.6'
     );
 
     wp_enqueue_script(

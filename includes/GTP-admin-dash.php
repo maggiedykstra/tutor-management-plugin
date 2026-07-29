@@ -312,6 +312,8 @@ function gtp_add_classroom_shortcode() {
         $start_time = gtp_sanitize_time($_POST['start_time'] ?? '');
         $end_time = gtp_sanitize_time($_POST['end_time'] ?? '');
         $time_slot = gtp_format_time_range($start_time, $end_time);
+        $meeting_days = gtp_meeting_days_to_storage($_POST['meeting_days'] ?? []);
+        $is_block = !empty($_POST['is_block']) ? 1 : 0;
         $roster = sanitize_textarea_field($_POST['roster']);
         $tutor_id = isset($_POST['tutor_id']) ? intval($_POST['tutor_id']) : 0;
 
@@ -330,6 +332,8 @@ function gtp_add_classroom_shortcode() {
                     'start_time'   => $start_time,
                     'end_time'     => $end_time,
                     'time_slot'    => $time_slot,
+                    'meeting_days' => $meeting_days ?: null,
+                    'is_block'     => $is_block,
                     'semester_id'  => gtp_get_working_semester_id(),
                 ]
             );
@@ -439,6 +443,16 @@ function gtp_add_classroom_shortcode() {
 
             <label>End Time:</label>
             <input type="time" name="end_time" step="60" style="width:100%; padding:8px; margin-bottom:10px;">
+
+            <label>Days of the week:</label>
+            <div style="margin-bottom:10px;">
+                <?php echo gtp_render_meeting_days_checkboxes(['id_prefix' => 'gtp-add-day']); ?>
+            </div>
+
+            <label class="gtp-check-row" style="display:flex; align-items:flex-start; gap:8px; margin:0 0 14px;">
+                <input type="checkbox" name="is_block" value="1">
+                <span>This class is a Block class / one semester only</span>
+            </label>
 
             <label>Assign Tutor (optional):</label>
             <select name="tutor_id" style="width:100%; padding:8px; margin-bottom:10px;">

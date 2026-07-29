@@ -69,6 +69,51 @@
     gap: 12px;
 }
 
+.gtp-meeting-days-fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.gtp-meeting-days-fieldset legend {
+    font-size: 13px;
+    font-weight: 500;
+    color: #444;
+    margin-bottom: 6px;
+    padding: 0;
+}
+
+.gtp-meeting-days {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.gtp-meeting-day {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 6px 10px;
+    border: 1px solid #d8d8d8;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.gtp-meeting-day input {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+}
+
+.gtp-meeting-day:has(input:checked) {
+    border-color: #0073aa;
+    background: #f0f7fb;
+}
+
 @media (max-width: 640px) {
     .gtp-class-card-header {
         flex-direction: column;

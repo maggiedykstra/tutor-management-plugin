@@ -54,10 +54,11 @@ function gtp_my_classes_shortcode() {
                      data-teacher-phone="<?php echo esc_attr($classroom->teacher_phone); ?>"
                      data-start-time="<?php echo esc_attr(gtp_time_input_value($classroom->start_time)); ?>"
                      data-end-time="<?php echo esc_attr(gtp_time_input_value($classroom->end_time)); ?>"
+                     data-meeting-days="<?php echo esc_attr($classroom->meeting_days ?? ''); ?>"
                      data-zoom-link="<?php echo esc_attr($classroom->zoom_link); ?>">
 
                     <div class="gtp-class-card-header">
-                        <h2><?php echo esc_html($classroom->subject); ?></h2>
+                        <h2><?php echo esc_html(gtp_format_classroom_subject($classroom)); ?></h2>
                         <button type="button" class="button gtp-edit-class-info-btn">Edit Class Information</button>
                     </div>
 
@@ -66,7 +67,7 @@ function gtp_my_classes_shortcode() {
                         <p><strong>Teacher:</strong> <span class="gtp-info-teacher"><?php echo esc_html($display_value($teacher_display)); ?></span></p>
                         <p><strong>Teacher Email:</strong> <span class="gtp-info-teacher-email"><?php echo esc_html($display_value($classroom->teacher_email)); ?></span></p>
                         <p><strong>Teacher Phone:</strong> <span class="gtp-info-teacher-phone"><?php echo esc_html($display_value($classroom->teacher_phone)); ?></span></p>
-                        <p><strong>Time:</strong> <span class="gtp-info-time"><?php echo esc_html(gtp_format_time_range($classroom->start_time, $classroom->end_time)); ?></span></p>
+                        <p><strong>Time:</strong> <span class="gtp-info-time"><?php echo esc_html(gtp_format_classroom_schedule($classroom)); ?></span></p>
                         <p class="gtp-info-zoom-row">
                             <strong>Zoom Link:</strong>
                             <span class="gtp-info-zoom">
@@ -111,6 +112,15 @@ function gtp_my_classes_shortcode() {
                                     <input type="time" class="gtp-edit-end-time" step="60" value="<?php echo esc_attr(gtp_time_input_value($classroom->end_time)); ?>">
                                 </label>
                             </div>
+                            <fieldset class="gtp-meeting-days-fieldset">
+                                <legend>Days of the week</legend>
+                                <?php echo gtp_render_meeting_days_checkboxes([
+                                    'name' => 'meeting_days_' . (int) $classroom->id . '[]',
+                                    'id_prefix' => 'gtp-myclass-day-' . (int) $classroom->id,
+                                    'selected' => $classroom->meeting_days ?? '',
+                                    'class' => 'gtp-meeting-days gtp-edit-meeting-days',
+                                ]); ?>
+                            </fieldset>
                             <label>
                                 <span>Zoom Link</span>
                                 <input type="url" class="gtp-edit-zoom-link" value="<?php echo esc_attr($classroom->zoom_link); ?>" placeholder="https://zoom.us/...">
